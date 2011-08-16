@@ -85,6 +85,7 @@
             child, i;
 
         for (i = 0; i < this.insatiableChildren.length; i++) {
+            // TODO find insatiableChildren from parents
             fn(this.insatiableChildren[i], path);
         }
         if (rest.length > 0) {

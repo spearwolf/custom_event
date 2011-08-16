@@ -56,6 +56,14 @@ console.info('Welcome to custom_event.js playground');
 
 _E.options.debug = true;
 
+
+//_E.on("foo/xyz:changed", function(xyz){ console.log("xyz is", xyz); });
+
+//_E.set("foo/xyz", 23);
+
+//_E.get("foo/xyz");
+
+
 fooMod = _E.Module("/foo/mod", {
     
     _init: function() { 
