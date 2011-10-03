@@ -2,7 +2,7 @@
 // Created 2010/05/07 by Wolfger Schramm <wolfger@spearwolf.de>
 (function() {
 
-    var root = this, _E = { VERSION: "0.6.4" };
+    var root = this, _E = { VERSION: "0.6.5" };
 
     // Export the API object for **CommonJS**, with backwards-compatibility
     // for the old `require()` API. If we're not in CommonJS, add `_E` to the
@@ -228,6 +228,9 @@
     // }}}
 
     function emitEvent(eventName) {  // {{{
+
+        if (_E.options.debug) { console.group("_E.emit ->", eventName); }
+
         var args = [],
             results = [],
             result_fn,
@@ -309,6 +312,8 @@
         if (result_fn && results.length > 0) {
             result_fn.apply(root, results);
         }
+
+        if (_E.options.debug) { console.groupEnd(); }
     }
     // }}}
 
