@@ -2,7 +2,7 @@
 // Created 2010/05/07 by Wolfger Schramm <wolfger@spearwolf.de>
 (function() {
 
-    var root = this, _E = { VERSION: "0.6.5" };
+    var root = this, _E = { VERSION: "0.6.6" };
 
     // Export the API object for **CommonJS**, with backwards-compatibility
     // for the old `require()` API. If we're not in CommonJS, add `_E` to the
@@ -206,6 +206,66 @@
         var opts = options || {};
         opts.once = true;
         return registerEventListener(eventPath, callbackFn, opts);
+    }
+    // }}}
+
+    function registerIdleEventListener(eventPath, idleTimeout, callbackFn, options) {  // {{{
+        var opts = options || {}, idleTimer, listener, paused = false;
+
+        function clearTimer() {
+            if (idleTimer) {
+                clearTimeout(idleTimer);
+            }
+            idleTimer = undefined;
+        }
+
+        function registerTimer() {
+            clearTimer();
+            idleTimer = setTimeout(callIdleFunc, idleTimeout);
+        }
+
+        var api = {
+            unbind: function() {
+                clearTimer();
+                listener.unbind();
+            },
+
+            pause: function(pause_) {
+                if (typeof pause_ === 'undefined') {
+                    return paused;
+                }
+                paused = pause_;
+                if (pause_) {
+                    clearTimer();
+                    listener.pause(true);
+                } else {
+                    if (!idleTimer) {
+                        registerTimer();
+                        listener.pause(false);
+                    }
+                }
+            },
+
+            start: function() { this.pause(false); },
+            stop: function() { this.pause(true); },
+
+            touch: function() { listener.emit(); }
+        };
+
+        function callIdleFunc() {
+            idleTimer = undefined;
+            listener.pause(true);
+            callbackFn.apply(api);
+            if (!api.pause()) {
+                registerTimer();
+                listener.pause(false);
+            }
+        }
+
+        listener = registerEventListener(eventPath, registerTimer, options);
+        registerTimer();
+
+        return api;
     }
     // }}}
 
@@ -423,6 +483,7 @@
 
     // custom event API
     _E.on = registerEventListener;
+    _E.onIdle = registerIdleEventListener;
     _E.once = registerEventListenerOnce;
     _E.emit = emitEvent;
     _E.connect = connectEventListener;  // TODO connect groups API

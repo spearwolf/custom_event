@@ -105,6 +105,7 @@
         <ul>
           <li><a href="#_E_on">_E.on</a></li>
           <li><a href="#_E_once">_E.once</a></li>
+          <li><a href="#_E_onIdle">_E.onIdle</a></li>
           <li><a href="#_E_unbind">_E.unbind</a></li>
           <li><a href="#_E_emit">_E.emit</a></li>
           <li><a href="#_E_connect">_E.connect</a></li>
@@ -117,6 +118,17 @@
           <li><a href="#_emit">emit</a></li>
           <li><a href="#_unbind">unbind</a></li>
           <li><a href="#_pause">pause</a></li>
+        </ul>
+      </article>
+
+      <article>
+        <h3>IdleListenerObject</h3>
+        <ul>
+          <li><a href="#_idle_touch">touch</a></li>
+          <li><a href="#_idle_unbind">unbind</a></li>
+          <li><a href="#_idle_pause">pause</a></li>
+          <li><a href="#_idle_stop">stop</a></li>
+          <li><a href="#_idle_start">start</a></li>
         </ul>
       </article>
 
@@ -183,6 +195,29 @@ _E.on("foo/bar", function(x, y) { console.log("x=", x, "y=", y); });
         </p>
         <pre><code>
 _E.once("foo/bar", function() { console.log("you'll never see this message again!"); })
+        </code></pre>
+      </article>
+
+      <article id="_E_onIdle">
+        <hgroup>
+          <h3>_E.onIdle</h3>
+          <h4>_E.on(action, timeout, callback_fn, [options])</h4>
+        </hgroup>
+        <p>
+          Register an idle event listener for <em>action</em>.<br/>
+          Returns a <a href="#IdleListenerObject">IdleListenerObject</a>.
+        </p>
+        <pre><code>
+idle = _E.onIdle("tick/tack", 5000, function() {
+    console.log("5 seconds after last 'tick/tack' action .."); 
+});
+
+/* to prevent execution of the idle function, call frequently .. */
+_E.emit("tick/tack");
+/* same */
+idle.touch();
+
+/* or just wait 5 seconds to see idle function in action .. */
         </code></pre>
       </article>
 
@@ -277,6 +312,41 @@ _E.connect("make/world", "hello/world", "foo/bar", "one/more/event");
       
     </section>
 
+    <section id="IdleListenerObject">
+      <h2>IdleListenerObject</h2>
+      <p>
+        After registering a <a href="#_E_onIdle">idle function</a> you will get a <em>IdleListenerObject</em> as result.<br/>
+        This object provides you with infos and some useful methods for the idle listener.<br/>
+      </p>
+
+      <h3>Methods</h3>
+      <dl>
+        <dt>touch</dt>
+        <dd><code>touch()</code></dd>
+        <dd>Alias for <code>idle.emit()</code>.</dd>
+
+        <dt>unbind</dt>
+        <dd><code>unbind()</code></dd>
+        <dd>Alias for <code>_E.unbind(<em>listener</em>.id)</code>.</dd>
+
+        <dt>pause</dt>
+        <dd><code>pause([pause])</code></dd>
+        <dd><em>Pause</em> the idle function temporary. If you set <em>pause</em> to <code>true</code>,
+          next time <em>action</em> &rarr; <code><em>listener</em>.name</code> is triggered, the listener will NOT be invoked.<br/>
+          Setting <em>pause</em> to <code>false</code> will enable the listener again.<br/>
+          Returns the current <em>pause</em> state if called without argument.</dd>
+
+        <dt>stop</dt>
+        <dd><code>stop()</code></dd>
+        <dd>Alias for <code>pause(true)</code></dd>
+
+        <dt>start</dt>
+        <dd><code>start()</code></dd>
+        <dd>Alias for <code>pause(false)</code></dd>
+      </dl>
+      
+    </section>
+
     <section id="_E_Module">
       <h2>Evented Modules</h2>
       <p>
@@ -331,6 +401,16 @@ fooMod = _E.Module("/foo/mod", {
     <section id="changelog">
       <h2>CHANGELOG</h2>
 
+      <dl>
+        <dt>0.6.6</dt>
+        <dd>2011-10-07</dd>
+        <dd>Added idle events <code>_E.onIdle</code></dd>
+      </dl>
+      <dl>
+        <dt>0.6.5</dt>
+        <dd>2011-10-04</dd>
+        <dd>Show event action traces if <code>setting _E.options.debug = true</code></dd>
+      </dl>
       <dl>
         <dt>0.6.4</dt>
         <dd>2011-07-28</dd>
