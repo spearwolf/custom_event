@@ -210,7 +210,7 @@
     // }}}
 
     function registerIdleEventListener(eventPath, idleTimeout, callbackFn, options) {  // {{{
-        var opts = options || {}, idleTimer, listener, paused = false;
+        var opts = options || {}, idleTimer, listener, paused = false, currentTimeout = idleTimeout;
 
         function clearTimer() {
             if (idleTimer) {
@@ -219,9 +219,12 @@
             idleTimer = undefined;
         }
 
-        function registerTimer() {
+        function registerTimer(timeout) {
+            if (timeout) {
+                currentTimeout = timeout;
+            }
             clearTimer();
-            idleTimer = setTimeout(callIdleFunc, idleTimeout);
+            idleTimer = setTimeout(callIdleFunc, currentTimeout);
         }
 
         var api = {
@@ -230,7 +233,7 @@
                 listener.unbind();
             },
 
-            pause: function(pause_) {
+            pause: function(pause_, timeout) {
                 if (typeof pause_ === 'undefined') {
                     return paused;
                 }
@@ -240,13 +243,13 @@
                     listener.pause(true);
                 } else {
                     if (!idleTimer) {
-                        registerTimer();
+                        registerTimer(timeout);
                         listener.pause(false);
                     }
                 }
             },
 
-            start: function() { this.pause(false); },
+            start: function(timeout) { this.pause(false, timeout); },
             stop: function() { this.pause(true); },
 
             touch: function() { listener.emit(); }
