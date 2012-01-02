@@ -4,6 +4,8 @@ require "closure-compiler"
 
 HEADER = /((^\s*\/\/.*\n)+)/
 
+task :default => :build
+
 desc "Use the Closure Compiler to compress custom_event.js"
 task :build do
   source  = File.read('custom_event.js')

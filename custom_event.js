@@ -2,16 +2,25 @@
 // Created 2010/05/07 by Wolfger Schramm <wolfger@spearwolf.de>
 (function() {
 
-    var root = this, _E = { VERSION: "0.6.6" };
+    var root = this, _E = { VERSION: "0.6.7" };
 
-    // Export the API object for **CommonJS**, with backwards-compatibility
-    // for the old `require()` API. If we're not in CommonJS, add `_E` to the
-    // global object.
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = _E;
+    // Export the Underscore object for **Node.js** and **"CommonJS"**, with
+    // backwards-compatibility for the old `require()` API. If we're not in
+    // CommonJS, add `_` to the global object.
+    if (typeof exports !== 'undefined') {
+        if (typeof module !== 'undefined' && module.exports) {
+            exports = module.exports = _E;
+        }
+        exports._E = _E;
+    } else if (typeof define === 'function' && define.amd) {
+        // Register as a named module with AMD.
+        define('custom_event', function() {
+            return _E;
+        });
     } else {
         root._E = _E;
     }
+    
 
     function logError() {   // {{{
         if (typeof root.console !== 'undefined') {
