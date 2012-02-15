@@ -63,6 +63,11 @@ _E.options.debug = true;
 
 //_E.get("foo/xyz");
 
+_E.data("foo/xyz").get();
+_E.data("foo/xyz").set(123);
+_E.data("foo/xyz").connect('foo/bar');  // -> _E.on('foo/bar', function(val) { document.getElementById("xxx").innerHTML = val; })
+
+
 
 fooMod = _E.Module("/foo/mod", {
     
