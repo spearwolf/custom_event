@@ -70,6 +70,7 @@ describe("custom_event basics", function() {
         });
 
         it("should NOT be called when using wildcard path with double '**'", function() {
+            // double-asterisk sequence '**' works only for registering events
 
             _e.action("test/**", 55);
 
@@ -136,6 +137,83 @@ describe("custom_event basics", function() {
         });
 
     });
+
+    describe("using once", function() {
+
+        var onA, onB, resA, resB;
+
+        beforeEach(function() {
+
+            onA = _e.once("once", function(val) { resA = val; });
+            onB = _e.on("ever", function(val) { resB = val; });
+
+            resA = resB = false;
+        });
+
+        afterEach(function() {
+            onA.unbind();
+            onB.unbind();
+        });
+
+        it("when one-time action is what you want", function() {
+
+            _e.action("once", 69);
+            _e.action("ever", 77);
+
+            expect(resA).toEqual(69);
+            expect(resB).toEqual(77);
+
+            _e.action("once", 70);
+            _e.action("ever", 78);
+
+            expect(resA).toEqual(69);
+            expect(resB).toEqual(78);
+        });
+
+    });
+
+    describe("using pause", function() {
+
+        it("should work as expected", function() {
+
+            var bar, foo = _e.on("foo/bar", function() { bar = arguments[0]; });
+
+            expect(foo.pause()).toBeFalsy();
+
+            _e.action("foo/bar", "herz aus eis");
+
+            expect(bar).toEqual("herz aus eis");
+
+            foo.pause(true);
+            expect(foo.pause()).toBeTruthy();
+
+            _e.action("foo/bar", "nachtbringer");
+
+            expect(bar).toEqual("herz aus eis");
+
+            foo.pause(false);
+            expect(foo.pause()).toBeFalsy();
+
+            _e.action("foo/bar", "weiter weiter");
+
+            expect(bar).toEqual("weiter weiter");
+        });
+
+    });
+
+    describe("eType should be correct", function() {
+
+        it("when using event listener", function() {
+
+            var foo = _e.on("foo/bar", function() {
+                expect(this.eType).toEqual("EventListener");
+            });
+
+            expect(foo.eType).toEqual("EventListener");
+        });
+
+    });
+
 
     /*
     // demonstrates use of spies to intercept and test method calls
