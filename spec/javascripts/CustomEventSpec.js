@@ -22,8 +22,8 @@ describe("custom_event basics", function() {
         });
 
         afterEach(function() {
-            onFoo.unbind();
-            onBar.unbind();
+            onFoo.destroy();
+            onBar.destroy();
         });
 
         it("should the straight handler be executed after calling '_e.action'", function() {
@@ -63,10 +63,10 @@ describe("custom_event basics", function() {
         });
 
         afterEach(function() {
-            onA.unbind();
-            onB.unbind();
-            onC.unbind();
-            onD.unbind();
+            onA.destroy();
+            onB.destroy();
+            onC.destroy();
+            onD.destroy();
         });
 
         it("should NOT be called when using wildcard path with double '**'", function() {
@@ -97,10 +97,10 @@ describe("custom_event basics", function() {
         });
 
         afterEach(function() {
-            onA.unbind();
-            onB.unbind();
-            onC.unbind();
-            onD.unbind();
+            onA.destroy();
+            onB.destroy();
+            onC.destroy();
+            onD.destroy();
         });
 
         it("should work for all event sub paths", function() {
@@ -151,8 +151,8 @@ describe("custom_event basics", function() {
         });
 
         afterEach(function() {
-            onA.unbind();
-            onB.unbind();
+            onA.destroy();
+            onB.destroy();
         });
 
         it("when one-time action is what you want", function() {
@@ -205,15 +205,50 @@ describe("custom_event basics", function() {
 
         it("when using event listener", function() {
 
-            var foo = _e.on("foo/bar", function() {
-                expect(this.eType).toEqual("EventListener");
+            var etype = false, foo = _e.on("foo/bar", function() {
+                etype = this.eType;
             });
 
             expect(foo.eType).toEqual("EventListener");
+
+            _e.action("foo/bar");
+
+            expect(etype).toEqual("EventListener");
         });
 
     });
 
+    describe("using destroy on event listeners", function() {
+
+        it("should work as expected", function() {
+
+            var val, foo = _e.on("foo/bar", function() { val = arguments[0]; });
+
+            _e.action("foo/bar", "hejho");
+
+            expect(val).toEqual("hejho");
+
+            foo.destroy();
+
+            _e.action("foo/bar", "the truth");
+
+            expect(val).toEqual("hejho");
+
+            foo = _e.on("foo/bar", function() {
+                val = arguments[0];
+                this.destroy();
+            });
+
+            _e.action("foo/bar", "last words");
+
+            expect(val).toEqual("last words");
+            
+            _e.action("foo/bar", "still alive?");
+
+            expect(val).toEqual("last words");
+        });
+
+    });
 
     /*
     // demonstrates use of spies to intercept and test method calls

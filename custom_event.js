@@ -211,7 +211,7 @@
             eType: 'EventListener',  // ETYPE
             id: listener.id,
             name: listener.name,
-            unbind: function() { _e.unbind(listener.id); },
+            destroy: function() { _e.destroy(listener.id); },
             action: function() { _e.action.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
             pause: function(pause) { 
                 if (typeof pause === 'boolean') {
@@ -251,9 +251,9 @@
         var api = {
             eType: "IdleEventListener",  // ETYPE
 
-            unbind: function() {
+            destroy: function() {
                 clearTimer();
-                listener.unbind();
+                listener.destroy();
             },
 
             pause: function(pause_, timeout) {
@@ -336,7 +336,7 @@
             try {
                 var destroy_callback_ids = [], call_count,
 
-                    unbind = function(id) {
+                    destroy = function(id) {
                         return function() {
                             destroy_callback_ids.push(id);
                         };
@@ -364,7 +364,11 @@
 
                         context = callback.binding || {};
                         context.name = eventName;
-                        context.unbind = unbind(callback.id);
+                        context.destroy = destroy(callback.id);
+
+                        if (typeof context.eType === 'undefined') {
+                            context.eType = 'EventListener';
+                        }
 
                         if (typeof context.pause !== 'function') {  // don't overwrite _e.Module's pause()
                             context.pause = pause(callback);
@@ -404,7 +408,7 @@
     }
     // }}}
 
-    function unbind(pathOrId, node) {  // {{{
+    function destroy(pathOrId, node) {  // {{{
         node = node || rootNode;
 
         if (typeof pathOrId === 'number') {
@@ -413,17 +417,17 @@
             } else {
                 var i;
                 for (i = 0; i < node.children.length; i++) {
-                    if (unbind(pathOrId, node.children[i])) {
+                    if (destroy(pathOrId, node.children[i])) {
                         return true;
                     }
                 }
                 for (i = 0; i < node.greedyChildren.length; i++) {
-                    if (unbind(pathOrId, node.greedyChildren[i])) {
+                    if (destroy(pathOrId, node.greedyChildren[i])) {
                         return true;
                     }
                 }
                 for (i = 0; i < node.insatiableChildren.length; i++) {
-                    if (unbind(pathOrId, node.insatiableChildren[i])) {
+                    if (destroy(pathOrId, node.insatiableChildren[i])) {
                         return true;
                     }
                 }
@@ -482,7 +486,7 @@
         module.destroy = function() {
             var i;
             for (i= 0; i < listener.length; ++i) {
-                listener[i].unbind();
+                listener[i].destroy();
             }
             for (i= 0; i < sub_modules.length; ++i) {
                 sub_modules[i].destroy();
@@ -516,7 +520,7 @@
     _e.once = registerEventListenerOnce;
     _e.action = emitEvent;
     _e.connect = connectEventListener;  // TODO connect groups API
-    _e.unbind = unbind;
+    _e.destroy = destroy;
     
     // module API
     _e.Module = createModule;
