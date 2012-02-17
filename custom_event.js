@@ -2,26 +2,30 @@
 // Created 2010/05/07 by Wolfger Schramm <wolfger@spearwolf.de>
 (function() {
 
-    var root = this, _E = { VERSION: "0.6.7" };
+    var root = this, _e = { VERSION: "0.7.0-pre" };
 
-    // Export the Underscore object for **Node.js** and **"CommonJS"**, with
-    // backwards-compatibility for the old `require()` API. If we're not in
-    // CommonJS, add `_` to the global object.
+    // Export the custom_event object {{{
+    // for **Node.js** and **"CommonJS"**, with backwards-compatibility for the old `require()` API.
+    // If we're not in CommonJS, add `_` to the global object.
     if (typeof exports !== 'undefined') {
         if (typeof module !== 'undefined' && module.exports) {
-            exports = module.exports = _E;
+            exports = module.exports = _e;
         }
-        exports._E = _E;
+        exports._e = _e;
     } else if (typeof define === 'function' && define.amd) {
         // Register as a named module with AMD.
         define('custom_event', function() {
-            return _E;
+            return _e;
+        });
+        define('custom_event/global', function() {
+            root._e = _e;
+            return _e;
         });
     } else {
-        root._E = _E;
+        root._e = _e;
     }
+    // }}}
     
-
     function logError() {   // {{{
         if (typeof root.console !== 'undefined') {
             console.error(Array.prototype.slice.call(arguments).join(" "));
@@ -29,7 +33,9 @@
     }
     // }}}
 
+
     function EventNode(name, parentNode) {  // {{{
+        this.eType = "EventNode";  // ETYPE
         this.name = name;
         this.parentNode = parentNode;
         this.children = [];
@@ -41,20 +47,22 @@
 
     var rootNode = new EventNode(), nextCallbackId = 1;
 
+    // EventNode prototype ================================================= {{{
+
     EventNode.prototype.fullPathName = function () {  // {{{
-        return (typeof this.name === 'undefined') ? _E.options.pathSeparator : this._fullPathName();
+        return (typeof this.name === 'undefined') ? _e.options.pathSeparator : this._fullPathName();
     };
 
     EventNode.prototype._fullPathName = function () {
-        return (typeof this.name === 'undefined') ? '' : this.parentNode._fullPathName() + _E.options.pathSeparator + this.name;
+        return (typeof this.name === 'undefined') ? '' : this.parentNode._fullPathName() + _e.options.pathSeparator + this.name;
     };
     // }}}
 
     EventNode.prototype.addChild = function (name) {  // {{{
         var node = new EventNode(name, this);
-        if (name === _E.options.greedyChar) {
+        if (name === _e.options.greedyChar) {
             this.greedyChildren.push(node);
-        } else if (name === _E.options.insatiableSequence) {
+        } else if (name === _e.options.insatiableSequence) {
             this.insatiableChildren.push(node);
         } else {
             this.children.push(node);
@@ -64,26 +72,26 @@
     // }}}
 
     EventNode.prototype.splitPath = function (path) {  // {{{
-        var all_names = path.split(_E.options.pathSeparator),
+        var all_names = path.split(_e.options.pathSeparator),
             name = null;
 
         while (name === null || name.length === 0) {
             name = all_names.shift();
         }
 
-        if (name === _E.options.insatiableSequence) {
+        if (name === _e.options.insatiableSequence) {
             return [name, ''];
         }
 
         var rest = [];
         for (var i=0; i < all_names.length; i++) {
             rest.push(all_names[i]);
-            if (all_names[i] === _E.options.insatiableSequence) {
+            if (all_names[i] === _e.options.insatiableSequence) {
                 break;
             }
         }
 
-        return [name, rest.length === 0 ? '' : rest.join(_E.options.pathSeparator)];
+        return [name, rest.length === 0 ? '' : rest.join(_e.options.pathSeparator)];
     };
     // }}}
 
@@ -100,7 +108,7 @@
         if (rest.length > 0) {
             for (i = 0; i < this.children.length; i++) {
                 child = this.children[i];
-                if (name === _E.options.greedyChar || name === child.name) {
+                if (name === _e.options.greedyChar || name === child.name) {
                     child.matchNodes(rest, fn);
                 }
             }
@@ -110,7 +118,7 @@
         } else {
             for (i = 0; i < this.children.length; i++) {
                 child = this.children[i];
-                if (name === _E.options.greedyChar || name === child.name) {
+                if (name === _e.options.greedyChar || name === child.name) {
                     fn(child);
                 }
             }
@@ -160,6 +168,7 @@
 
     EventNode.prototype.addCallback = function (callbackFn, options) {  // {{{
         var callback = {
+            eType: 'CallbackFn',  // ETYPE
             id: nextCallbackId++,
             name: options.name,
             fn: callbackFn,
@@ -192,15 +201,18 @@
     };
     // }}}
 
+    // ===================================================================== }}}
+
     function registerEventListener(eventPath, callbackFn, options) {  // {{{
         var opts = options || {};
         opts.name = eventPath;
         var listener = rootNode.findOrCreateNode(eventPath).addCallback(callbackFn, opts);
         return {
+            eType: 'EventListener',  // ETYPE
             id: listener.id,
             name: listener.name,
-            unbind: function() { _E.unbind(listener.id); },
-            emit: function() { _E.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
+            unbind: function() { _e.unbind(listener.id); },
+            action: function() { _e.action.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
             pause: function(pause) { 
                 if (typeof pause === 'boolean') {
                     listener.paused = pause;
@@ -237,6 +249,8 @@
         }
 
         var api = {
+            eType: "IdleEventListener",  // ETYPE
+
             unbind: function() {
                 clearTimer();
                 listener.unbind();
@@ -261,7 +275,7 @@
             start: function(timeout) { this.pause(false, timeout); },
             stop: function() { this.pause(true); },
 
-            touch: function() { listener.emit(); }
+            touch: function() { listener.action(); }
         };
 
         function callIdleFunc() {
@@ -282,26 +296,26 @@
     // }}}
 
     function createEmitStackTrace() {  // {{{
-        if (typeof _E._emitStackTrace !== 'object') {
-            _E._emitStackTrace = { currentLevel: 1 };
+        if (typeof _e._emitStackTrace !== 'object') {
+            _e._emitStackTrace = { currentLevel: 1 };
         } else {
-            ++_E._emitStackTrace.currentLevel;
+            ++_e._emitStackTrace.currentLevel;
         }
-        return _E._emitStackTrace;
+        return _e._emitStackTrace;
     }
     // }}}
 
     function clearEmitStackTrace() {  // {{{
-        --_E._emitStackTrace.currentLevel;
-        if (_E._emitStackTrace.currentLevel === 0) {
-            _E._emitStackTrace = { currentLevel: 0 };
+        --_e._emitStackTrace.currentLevel;
+        if (_e._emitStackTrace.currentLevel === 0) {
+            _e._emitStackTrace = { currentLevel: 0 };
         }
     }
     // }}}
 
     function emitEvent(eventName) {  // {{{
 
-        if (_E.options.debug) { console.group("_E.emit ->", eventName); }
+        if (_e.options.debug) { console.group("_e.action ->", eventName); }
 
         var args = [],
             results = [],
@@ -345,18 +359,19 @@
                         continue;
                     }
 
-                    if (!(callback.id in _E._emitStackTrace)) {
+                    if (!(callback.id in _e._emitStackTrace)) {
                         stacktrace[callback.id] = 1;
 
                         context = callback.binding || {};
                         context.name = eventName;
                         context.unbind = unbind(callback.id);
-                        if (typeof context.pause !== 'function') {  // don't overwrite _E.Module's pause()
+
+                        if (typeof context.pause !== 'function') {  // don't overwrite _e.Module's pause()
                             context.pause = pause(callback);
                         }
 
                         if (typeof restPath !== 'undefined') {
-                            context.pathArgs = restPath.split(_E.options.pathSeparator);
+                            context.pathArgs = restPath.split(_e.options.pathSeparator);
                             result = callback.fn.apply(context, context.pathArgs.concat(args));
                         } else {
                             result = callback.fn.apply(context, args);
@@ -385,7 +400,7 @@
             result_fn.apply(root, results);
         }
 
-        if (_E.options.debug) { console.groupEnd(); }
+        if (_e.options.debug) { console.groupEnd(); }
     }
     // }}}
 
@@ -421,10 +436,10 @@
     function connectEventListener() {  // {{{
         var listener = Array.prototype.slice.call(arguments),
             action = listener.shift();
-        return _E.on(action, function() {
+        return _e.on(action, function() {
             var args = Array.prototype.slice.call(arguments);
             for (var j = 0; j < listener.length; ++j) {
-                _E.emit.apply(this, [listener[j]].concat(args));
+                _e.action.apply(this, [listener[j]].concat(args));
             }
         });
     }
@@ -434,11 +449,11 @@
         rootPath = rootPath.replace(/\/+$/, '');
         var listener = [], sub_modules = [], annotation;
 
-        if (_E.options.debug) { console.group("_E.Module ->", rootPath); }
+        if (_e.options.debug) { console.group("_e.Module ->", rootPath); }
 
         if ("_init" in module) {
-            if (_E.options.debug) { console.log("constructor", rootPath+_E.options.pathSeparator+_E.options.insatiableSequence); }
-            listener.push(_E.once(rootPath+_E.options.pathSeparator+_E.options.insatiableSequence, module._init, { binding: module }));
+            if (_e.options.debug) { console.log("constructor", rootPath+_e.options.pathSeparator+_e.options.insatiableSequence); }
+            listener.push(_e.once(rootPath+_e.options.pathSeparator+_e.options.insatiableSequence, module._init, { binding: module }));
         }
         for (var prop in module) {
             if (module.hasOwnProperty(prop)) {
@@ -448,21 +463,21 @@
                         if (prop !== '_init') {
                             annotation = annotation[2].split(" ");
                             if (annotation.length === 1) {
-                                if (_E.options.debug) { console.log("on", rootPath+_E.options.pathSeparator+annotation[0]); }
-                                listener.push(_E.on(rootPath+_E.options.pathSeparator+annotation[0], module[prop], { binding: module }));
+                                if (_e.options.debug) { console.log("on", rootPath+_e.options.pathSeparator+annotation[0]); }
+                                listener.push(_e.on(rootPath+_e.options.pathSeparator+annotation[0], module[prop], { binding: module }));
                             } else if (annotation[1] === '..') {
-                                if (_E.options.debug) { console.log("on", rootPath+_E.options.pathSeparator+annotation[0]+_E.options.pathSeparator+_E.options.insatiableSequence); }
-                                listener.push(_E.on(rootPath+_E.options.pathSeparator+annotation[0]+_E.options.pathSeparator+_E.options.insatiableSequence, module[prop], { binding: module }));
+                                if (_e.options.debug) { console.log("on", rootPath+_e.options.pathSeparator+annotation[0]+_e.options.pathSeparator+_e.options.insatiableSequence); }
+                                listener.push(_e.on(rootPath+_e.options.pathSeparator+annotation[0]+_e.options.pathSeparator+_e.options.insatiableSequence, module[prop], { binding: module }));
                             }
                         }
                     }
                     if (annotation[1] === 'module' && typeof module[prop] === 'object') {
-                        sub_modules.push(createModule(rootPath+_E.options.pathSeparator+annotation[2], module[prop]));
+                        sub_modules.push(createModule(rootPath+_e.options.pathSeparator+annotation[2], module[prop]));
                     }
                 }
             }
         }
-        if (_E.options.debug) { console.groupEnd(); }
+        if (_e.options.debug) { console.groupEnd(); }
 
         module.destroy = function() {
             var i;
@@ -489,23 +504,25 @@
             return paused;
         };
 
+        module.eType = "eModule";  // ETYPE
+
         return module;
     }
     // }}}
 
     // custom event API
-    _E.on = registerEventListener;
-    _E.onIdle = registerIdleEventListener;
-    _E.once = registerEventListenerOnce;
-    _E.emit = emitEvent;
-    _E.connect = connectEventListener;  // TODO connect groups API
-    _E.unbind = unbind;
+    _e.on = registerEventListener;
+    _e.idle = registerIdleEventListener;
+    _e.once = registerEventListenerOnce;
+    _e.action = emitEvent;
+    _e.connect = connectEventListener;  // TODO connect groups API
+    _e.unbind = unbind;
     
     // module API
-    _E.Module = createModule;
+    _e.Module = createModule;
 
     // options
-    _E.options = {
+    _e.options = {
         pathSeparator: '/',
         greedyChar: '*',
         insatiableSequence: '**',
@@ -513,5 +530,5 @@
     };
 
     // debug
-    _E._rootNode = rootNode;
+    _e._rootNode = rootNode;
 })();
