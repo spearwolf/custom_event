@@ -1,5 +1,21 @@
 console.info('Welcome to custom_event.js playground');
 
+_E.options.skipRecursionCheck = true;
+
+_E.on("call/**", function(name) {
+    console.debug("call:", name);
+});
+
+_E.on("foo/bar", function() {
+    console.debug("foo/bar");
+    _E.emit("call/first");
+});
+
+_E.connect("foo/bar", "call/second");
+
+_E.emit("foo/bar");
+
+
 //_E.on("**", function() {
     //console.debug("event '" + this.name + "'");
 //});
@@ -63,7 +79,7 @@ _E.options.debug = true;
 
 //_E.get("foo/xyz");
 
-
+/*
 fooMod = _E.Module("/foo/mod", {
     
     _init: function() { 
@@ -91,6 +107,7 @@ fooMod = _E.Module("/foo/mod", {
         'on foo': function() { console.log("subversiv", arguments); }
     }
 });
+*/
 
 _E.options.debug = false;
 

@@ -2,7 +2,7 @@
 // Created 2010/05/07 by Wolfger Schramm <wolfger@spearwolf.de>
 (function() {
 
-    var root = this, _E = { VERSION: "0.6.7" };
+    var root = this, _E = { VERSION: "0.6.8" };
 
     // Export the Underscore object for **Node.js** and **"CommonJS"**, with
     // backwards-compatibility for the old `require()` API. If we're not in
@@ -345,12 +345,13 @@
                         continue;
                     }
 
-                    if (!(callback.id in _E._emitStackTrace)) {
+                    if (_E.options.skipRecursionCheck || !(callback.id in _E._emitStackTrace)) {
                         stacktrace[callback.id] = 1;
 
                         context = callback.binding || {};
                         context.name = eventName;
                         context.unbind = unbind(callback.id);
+
                         if (typeof context.pause !== 'function') {  // don't overwrite _E.Module's pause()
                             context.pause = pause(callback);
                         }
@@ -368,6 +369,10 @@
 
                         if (result !== null && typeof result !== 'undefined') {
                             results.push(result);
+                        }
+                    } else {
+                        if (!_E.options.skipRecursionCheck) {
+                            logError("recursion check failed on "+eventName);
                         }
                     }
                 }
@@ -509,7 +514,8 @@
         pathSeparator: '/',
         greedyChar: '*',
         insatiableSequence: '**',
-        debug: false
+        debug: false,
+        skipRecursionCheck: false
     };
 
     // debug
