@@ -308,7 +308,7 @@
 
     function createEmitStackTrace() {  // {{{
         if (typeof _e._emitStackTrace !== 'object') {
-            _e._emitStackTrace = { currentLevel: 1 };
+            _e._emitStackTrace = { currentLevel: 1, topicPath: [] };
         } else {
             ++_e._emitStackTrace.currentLevel;
         }
@@ -319,7 +319,7 @@
     function clearEmitStackTrace() {  // {{{
         --_e._emitStackTrace.currentLevel;
         if (_e._emitStackTrace.currentLevel === 0) {
-            _e._emitStackTrace = { currentLevel: 0 };
+            _e._emitStackTrace = { currentLevel: 0, topicPath: [] };
         }
     }
     // }}}
@@ -384,18 +384,19 @@
                         continue;
                     }
 
-                    if (!(callback.id in stacktrace)) {
-                        stacktrace[callback.id] = 1;
+                    if (stacktrace.topicPath.indexOf(callback.id) < 0) {
+                        stacktrace.topicPath.push(callback.id);
 
                         context = callback.binding || {};
                         context.name = topic;
                         context.destroy = destroy(callback.id);
 
                         if (typeof context.eType === 'undefined') {
-                            context.eType = 'EventListener';
+                            context.eType = 'EventListener';  // ???
                         }
 
-                        if (typeof context.pause !== 'function') {  // don't overwrite _e.Module's pause()
+                        // don't overwrite _e.Module's pause()
+                        if (typeof context.pause !== 'function') {
                             context.pause = pause(callback);
                         }
 
@@ -418,6 +419,11 @@
                         if (result !== null && typeof result !== 'undefined') {
                             results.push(result);
                         }
+                        
+                        stacktrace.topicPath.pop();
+
+                    } else {
+                        if (_e.options.trace) { console.log("_e.on -> (skipped/recursion)", callback.name, "["+callback.id+"]", callback); }
                     }
                 }
 
@@ -469,11 +475,11 @@
 
     function connectEventListener() {  // {{{
         var listener = Array.prototype.slice.call(arguments),
-            action = listener.shift();
-        return _e.on(action, function() {
+            topic = listener.shift();
+        return _e.on(topic, function() {
             var args = Array.prototype.slice.call(arguments);
             for (var j = 0; j < listener.length; ++j) {
-                _e.emit.apply(this, [listener[j]].concat(args));
+                _e.emit.apply(root, [listener[j]].concat(args));
             }
         });
     }
@@ -564,7 +570,7 @@
 
     // Emit an Event while expecting to get some [result].
     _e.get = function() {
-        emitEvent.apply(this, [{ get: true }].concat(Array.prototype.slice.call(arguments)));
+        emitEvent.apply(root, [{ get: true }].concat(Array.prototype.slice.call(arguments)));
     };
 
     // Connect multiple topics together.
