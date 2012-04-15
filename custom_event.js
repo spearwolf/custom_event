@@ -338,13 +338,13 @@
             topic = options_;
             options = {};
         } else {
-            if (typeof options.get === 'function') {
-                result_fn = options.get;
+            if (typeof options.collect === 'function') {
+                result_fn = options.collect;
             }
         }
 
         for (i = (has_options ? 2 : 1), len = arguments.length; i < len; ++i) {
-            if (options.get === true && i === len - 1 && typeof arguments[i] === 'function') {
+            if (options.collect === true && i === len - 1 && typeof arguments[i] === 'function') {
                 result_fn = arguments[i];
             } else {
                 args.push(arguments[i]);
@@ -568,10 +568,12 @@
     // Emit an Event.
     _e.emit = emitEvent;
 
-    // Emit an Event while expecting to get some [result].
-    _e.get = function() {
-        emitEvent.apply(root, [{ get: true }].concat(Array.prototype.slice.call(arguments)));
+    // Emit an Event and collect all results (if any).
+    _e.collect = function() {
+        emitEvent.apply(root, [{ collect: true }].concat(Array.prototype.slice.call(arguments)));
     };
+
+    // TODO _e.get "topic", function() {}
 
     // Connect multiple topics together.
     _e.connect = connectEventListener;

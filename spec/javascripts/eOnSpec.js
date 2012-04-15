@@ -15,7 +15,7 @@ describe("_e.on", function() {
         expect(typeof a.destroy).toEqual("function");
     });
 
-    it("should execute our callback after emiting an event for our topic", function() {
+    it("should execute the callback after emit()", function() {
 
         var topic = "hyperion/aphrodite",
             anotherTopic = "kronos/zeus",
