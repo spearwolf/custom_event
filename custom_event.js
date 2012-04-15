@@ -1,12 +1,12 @@
-// custom_event.js
 // Created 2010/05/07 by Wolfger Schramm <wolfger@spearwolf.de>
 (function() {
 
+    // Export VERSION
     var root = this, _e = { VERSION: "0.7.0-pre" };
 
-    // Export the custom_event object {{{
+    // Export the custom_event object
     // for **Node.js** and **"CommonJS"**, with backwards-compatibility for the old `require()` API.
-    // If we're not in CommonJS, add `_` to the global object.
+    // If we're not in CommonJS, add `_e` to the global object.
     if (typeof exports !== 'undefined') {
         if (typeof module !== 'undefined' && module.exports) {
             exports = module.exports = _e;
@@ -14,9 +14,12 @@
         exports._e = _e;
     } else if (typeof define === 'function' && define.amd) {
         // Register as a named module with AMD.
+        //
+        // Module name is `custom_event`.
         define('custom_event', function() {
             return _e;
         });
+        // Module `custom_event/global` does the same plus setting `_e` into global namespace.
         define('custom_event/global', function() {
             root._e = _e;
             return _e;
@@ -166,12 +169,12 @@
     };
     // }}}
 
-    EventNode.prototype.addCallback = function (callbackFn, options) {  // {{{
+    EventNode.prototype.addCallback = function (callback, options) {  // {{{
         var callback = {
-            eType: 'CallbackFn',  // ETYPE
+            eType: 'eCallback',  // ETYPE
             id: nextCallbackId++,
             name: options.name,
-            fn: callbackFn,
+            fn: callback,
             once: !!options.once,
             binding: options.binding,
             paused: false
@@ -203,16 +206,24 @@
 
     // ===================================================================== }}}
 
-    function registerEventListener(eventPath, callbackFn, options) {  // {{{
+    function registerEventListener(topic, callback, options) {  // {{{
         var opts = options || {};
-        opts.name = eventPath;
-        var listener = rootNode.findOrCreateNode(eventPath).addCallback(callbackFn, opts);
+        opts.name = topic;
+        var listener = rootNode.findOrCreateNode(topic).addCallback(callback, opts);
         return {
             eType: 'EventListener',  // ETYPE
             id: listener.id,
             name: listener.name,
-            destroy: function() { _e.destroy(listener.id); },
-            action: function() { _e.action.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
+            destroy: function() {
+                _e.destroy(listener.id);
+                delete this.eType;
+                delete this.id;
+                delete this.name;
+                delete this.destroy;
+                delete this.emit;
+                delete this.pause;
+            },
+            emit: function() { _e.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
             pause: function(pause) { 
                 if (typeof pause === 'boolean') {
                     listener.paused = pause;
@@ -223,14 +234,14 @@
     }
     // }}}
 
-    function registerEventListenerOnce(eventPath, callbackFn, options) {  // {{{
+    function registerEventListenerOnce(topic, callback, options) {  // {{{
         var opts = options || {};
         opts.once = true;
-        return registerEventListener(eventPath, callbackFn, opts);
+        return registerEventListener(topic, callback, opts);
     }
     // }}}
 
-    function registerIdleEventListener(eventPath, idleTimeout, callbackFn, options) {  // {{{
+    function registerIdleEventListener(eventPath, idleTimeout, callback, options) {  // {{{
         var opts = options || {}, idleTimer, listener, paused = false, currentTimeout = idleTimeout;
 
         function clearTimer() {
@@ -275,13 +286,13 @@
             start: function(timeout) { this.pause(false, timeout); },
             stop: function() { this.pause(true); },
 
-            touch: function() { listener.action(); }
+            touch: function() { listener.emit(); }
         };
 
         function callIdleFunc() {
             idleTimer = undefined;
             listener.pause(true);
-            callbackFn.apply(api);
+            callback.apply(api);
             if (!api.pause()) {
                 registerTimer();
                 listener.pause(false);
@@ -313,26 +324,38 @@
     }
     // }}}
 
-    function emitEvent(eventName) {  // {{{
-
-        if (_e.options.debug) { console.group("_e.action ->", eventName); }
+    function emitEvent(options_, topic_) {  // {{{
 
         var args = [],
             results = [],
             result_fn,
-            i, len;
+            i, len,
+            options = options_,
+            topic = topic_,
+            has_options = typeof options === 'object';
 
-        for (i = 1, len = arguments.length; i < len; ++i) {
-            if (i === len - 1 && typeof arguments[i] === 'function') {
+        if (!has_options) {
+            topic = options_;
+            options = {};
+        } else {
+            if (typeof options.get === 'function') {
+                result_fn = options.get;
+            }
+        }
+
+        for (i = (has_options ? 2 : 1), len = arguments.length; i < len; ++i) {
+            if (options.get === true && i === len - 1 && typeof arguments[i] === 'function') {
                 result_fn = arguments[i];
             } else {
                 args.push(arguments[i]);
             }
         }
 
+        if (_e.options.trace) { console.group("_e.emit ->", topic); }
+
         var stacktrace = createEmitStackTrace();
 
-        rootNode.matchNodes(eventName, function (node, restPath) {
+        rootNode.matchNodes(topic, function (node, restPath) {
             try {
                 var destroy_callback_ids = [], call_count,
 
@@ -350,20 +373,22 @@
 
                     result,
                     context,
-                    callback;
+                    callback,
+                    args_;
 
                 for (i = 0; i < node.callbacks.length; i++) {
                     callback = node.callbacks[i];
 
                     if (callback.paused) {
+                        if (_e.options.trace) { console.log("_e.on -> (paused)", callback.name, "["+callback.id+"]", callback); }
                         continue;
                     }
 
-                    if (!(callback.id in _e._emitStackTrace)) {
+                    if (!(callback.id in stacktrace)) {
                         stacktrace[callback.id] = 1;
 
                         context = callback.binding || {};
-                        context.name = eventName;
+                        context.name = topic;
                         context.destroy = destroy(callback.id);
 
                         if (typeof context.eType === 'undefined') {
@@ -374,12 +399,17 @@
                             context.pause = pause(callback);
                         }
 
+                        args_ = args;
                         if (typeof restPath !== 'undefined') {
                             context.pathArgs = restPath.split(_e.options.pathSeparator);
-                            result = callback.fn.apply(context, context.pathArgs.concat(args));
-                        } else {
-                            result = callback.fn.apply(context, args);
+                            args_ = context.pathArgs.concat(args);
                         }
+
+                        if (_e.options.trace) {
+                            console.log("_e.on ->", callback.name, "["+callback.id+"]", callback, "args=", args_);
+                        }
+
+                        result = callback.fn.apply(context, args_);
 
                         if (callback.once) {
                             destroy_callback_ids.push(callback.id);
@@ -404,7 +434,7 @@
             result_fn.apply(root, results);
         }
 
-        if (_e.options.debug) { console.groupEnd(); }
+        if (_e.options.trace) { console.groupEnd(); }
     }
     // }}}
 
@@ -443,7 +473,7 @@
         return _e.on(action, function() {
             var args = Array.prototype.slice.call(arguments);
             for (var j = 0; j < listener.length; ++j) {
-                _e.action.apply(this, [listener[j]].concat(args));
+                _e.emit.apply(this, [listener[j]].concat(args));
             }
         });
     }
@@ -453,10 +483,10 @@
         rootPath = rootPath.replace(/\/+$/, '');
         var listener = [], sub_modules = [], annotation;
 
-        if (_e.options.debug) { console.group("_e.Module ->", rootPath); }
+        if (_e.options.trace) { console.group("_e.Module ->", rootPath); }
 
         if ("_init" in module) {
-            if (_e.options.debug) { console.log("constructor", rootPath+_e.options.pathSeparator+_e.options.insatiableSequence); }
+            if (_e.options.trace) { console.log("constructor", rootPath+_e.options.pathSeparator+_e.options.insatiableSequence); }
             listener.push(_e.once(rootPath+_e.options.pathSeparator+_e.options.insatiableSequence, module._init, { binding: module }));
         }
         for (var prop in module) {
@@ -467,10 +497,10 @@
                         if (prop !== '_init') {
                             annotation = annotation[2].split(" ");
                             if (annotation.length === 1) {
-                                if (_e.options.debug) { console.log("on", rootPath+_e.options.pathSeparator+annotation[0]); }
+                                if (_e.options.trace) { console.log("on", rootPath+_e.options.pathSeparator+annotation[0]); }
                                 listener.push(_e.on(rootPath+_e.options.pathSeparator+annotation[0], module[prop], { binding: module }));
                             } else if (annotation[1] === '..') {
-                                if (_e.options.debug) { console.log("on", rootPath+_e.options.pathSeparator+annotation[0]+_e.options.pathSeparator+_e.options.insatiableSequence); }
+                                if (_e.options.trace) { console.log("on", rootPath+_e.options.pathSeparator+annotation[0]+_e.options.pathSeparator+_e.options.insatiableSequence); }
                                 listener.push(_e.on(rootPath+_e.options.pathSeparator+annotation[0]+_e.options.pathSeparator+_e.options.insatiableSequence, module[prop], { binding: module }));
                             }
                         }
@@ -481,7 +511,7 @@
                 }
             }
         }
-        if (_e.options.debug) { console.groupEnd(); }
+        if (_e.options.trace) { console.groupEnd(); }
 
         module.destroy = function() {
             var i;
@@ -514,23 +544,48 @@
     }
     // }}}
 
-    // custom event API
+    // custom_event api
+    // ==================================================================
+
+    // Register an EventListener.
     _e.on = registerEventListener;
+
+    // Register an "idle" EventListener.
     _e.idle = registerIdleEventListener;
+
+    // Register an "one-time" EventListener.
     _e.once = registerEventListenerOnce;
-    _e.action = emitEvent;
-    _e.connect = connectEventListener;  // TODO connect groups API
+
+    // TODO require
+    // _e.require [topic-a, topic-b, ..], function(topicA, topicB, ..)
+
+    // Emit an Event.
+    _e.emit = emitEvent;
+
+    // Emit an Event while expecting to get some [result].
+    _e.get = function() {
+        emitEvent.apply(this, [{ get: true }].concat(Array.prototype.slice.call(arguments)));
+    };
+
+    // Connect multiple topics together.
+    _e.connect = connectEventListener;
+
+    // Destroy a registered EventListener.
     _e.destroy = destroy;
     
+    // XXX @obsolete
     // module API
     _e.Module = createModule;
+
+    // TODO group
+    // _e.group topicPrefix, function(e) { .. e.on() .. }
 
     // options
     _e.options = {
         pathSeparator: '/',
         greedyChar: '*',
         insatiableSequence: '**',
-        debug: false
+        trace: false
     };
 
     // debug

@@ -1,10 +1,12 @@
+_e.options.trace = true;
+
 describe("custom_event basics", function() {
 
-    it("should exists in global namespace", function() {
+    it("'_e' should exists in global namespace", function() {
         expect(_e).toBeDefined();
     });
 
-    describe("when two event paths has been registered with '_e.on'", function() {
+    describe("when two event paths has been registered with '_e.on'", function() {  // {{{
 
         var onFoo, onBar, fooResult, barResult;
 
@@ -26,29 +28,30 @@ describe("custom_event basics", function() {
             onBar.destroy();
         });
 
-        it("should the straight handler be executed after calling '_e.action'", function() {
+        it("should the straight handler be executed after calling '_e.emit'", function() {
 
-            _e.action("test/foo", 23);
+            _e.emit("test/foo", 23);
 
             expect(fooResult).toEqual(23);
             expect(barResult).toBeFalsy();
 
-            _e.action("test/bar", 42);
+            _e.emit("test/bar", 42);
 
             expect(fooResult).toEqual(23);
             expect(barResult).toEqual(42);
         });
 
-        it("should all handlers be executed after calling '_e.action' with a wildcard event path", function() {
+        it("should all handlers be executed after calling '_e.emit' with a wildcard event path", function() {
 
-            _e.action("test/*", 32);
+            _e.emit("test/*", 32);
 
             expect(fooResult).toEqual(32);
             expect(barResult).toEqual(32);
         });
     });
+    // }}}
 
-    describe("all handlers within sub paths", function() {
+    describe("all handlers within sub paths", function() {  // {{{
 
         var onA, onB, onC, onD, resA, resB, resC, resD;
 
@@ -72,7 +75,7 @@ describe("custom_event basics", function() {
         it("should NOT be called when using wildcard path with double '**'", function() {
             // double-asterisk sequence '**' works only for registering events
 
-            _e.action("test/**", 55);
+            _e.emit("test/**", 55);
 
             expect(resA).toBeFalsy();
             expect(resB).toBeFalsy();
@@ -81,8 +84,9 @@ describe("custom_event basics", function() {
         });
 
     });
+    // }}}
 
-    describe("registering an action with double-asterisk '**'", function() {
+    describe("registering an action with double-asterisk '**'", function() { // {{{
 
         var onA, onB, onC, onD, resA, resB, resC, resD;
 
@@ -105,7 +109,7 @@ describe("custom_event basics", function() {
 
         it("should work for all event sub paths", function() {
 
-            _e.action("test/a", 55);
+            _e.emit("test/a", 55);
 
             expect(resA).toEqual(55);
             expect(resB).toBeFalsy();
@@ -114,7 +118,7 @@ describe("custom_event basics", function() {
             expect(resD[0]).toEqual('a');
             expect(resD[1]).toEqual(55);
 
-            _e.action("test/foo/b", 56);
+            _e.emit("test/foo/b", 56);
 
             expect(resA).toEqual(55);
             expect(resB).toEqual(56);
@@ -124,7 +128,7 @@ describe("custom_event basics", function() {
             expect(resD[1]).toEqual('b');
             expect(resD[2]).toEqual(56);
 
-            _e.action("test/foo/bar/c", 57);
+            _e.emit("test/foo/bar/c", 57);
 
             expect(resA).toEqual(55);
             expect(resB).toEqual(56);
@@ -137,8 +141,9 @@ describe("custom_event basics", function() {
         });
 
     });
+    // }}}
 
-    describe("using once", function() {
+    describe("use '_e.once'", function() { // {{{
 
         var onA, onB, resA, resB;
 
@@ -157,22 +162,23 @@ describe("custom_event basics", function() {
 
         it("when one-time action is what you want", function() {
 
-            _e.action("once", 69);
-            _e.action("ever", 77);
+            _e.emit("once", 69);
+            _e.emit("ever", 77);
 
             expect(resA).toEqual(69);
             expect(resB).toEqual(77);
 
-            _e.action("once", 70);
-            _e.action("ever", 78);
+            _e.emit("once", 70);
+            _e.emit("ever", 78);
 
             expect(resA).toEqual(69);
             expect(resB).toEqual(78);
         });
 
     });
+    // }}}
 
-    describe("using pause", function() {
+    describe("using pause", function() { // {{{
 
         it("should work as expected", function() {
 
@@ -180,28 +186,29 @@ describe("custom_event basics", function() {
 
             expect(foo.pause()).toBeFalsy();
 
-            _e.action("foo/bar", "herz aus eis");
+            _e.emit("foo/bar", "herz aus eis");
 
             expect(bar).toEqual("herz aus eis");
 
             foo.pause(true);
             expect(foo.pause()).toBeTruthy();
 
-            _e.action("foo/bar", "nachtbringer");
+            _e.emit("foo/bar", "nachtbringer");
 
             expect(bar).toEqual("herz aus eis");
 
             foo.pause(false);
             expect(foo.pause()).toBeFalsy();
 
-            _e.action("foo/bar", "weiter weiter");
+            _e.emit("foo/bar", "weiter weiter");
 
             expect(bar).toEqual("weiter weiter");
         });
 
     });
+    // }}}
 
-    describe("eType should be correct", function() {
+    describe("eType should be correct", function() { // {{{
 
         it("when using event listener", function() {
 
@@ -211,26 +218,27 @@ describe("custom_event basics", function() {
 
             expect(foo.eType).toEqual("EventListener");
 
-            _e.action("foo/bar");
+            _e.emit("foo/bar");
 
             expect(etype).toEqual("EventListener");
         });
 
     });
+    // }}}
 
-    describe("using destroy on event listeners", function() {
+    describe("calling 'destroy()' on an EventListeners", function() { // {{{
 
         it("should work as expected", function() {
 
             var val, foo = _e.on("foo/bar", function() { val = arguments[0]; });
 
-            _e.action("foo/bar", "hejho");
+            _e.emit("foo/bar", "hejho");
 
             expect(val).toEqual("hejho");
 
             foo.destroy();
 
-            _e.action("foo/bar", "the truth");
+            _e.emit("foo/bar", "the truth");
 
             expect(val).toEqual("hejho");
 
@@ -239,16 +247,17 @@ describe("custom_event basics", function() {
                 this.destroy();
             });
 
-            _e.action("foo/bar", "last words");
+            _e.emit("foo/bar", "last words");
 
             expect(val).toEqual("last words");
             
-            _e.action("foo/bar", "still alive?");
+            _e.emit("foo/bar", "still alive?");
 
             expect(val).toEqual("last words");
         });
 
     });
+    // }}}
 
     /*
     // demonstrates use of spies to intercept and test method calls

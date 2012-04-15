@@ -1,442 +1,453 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>custom_event.js</title>
-    <link rel="stylesheet" href="http://yandex.st/highlightjs/6.0/styles/github.min.css">
-    <style>
-      /* {{{ */
-      body {
-        margin: 50px 50px 80px 50px;
-      }
-      body, a {
-        font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
-        font-height: 16px;
-        line-height: 24px;
-        color: black;
-      }
-      section {
-        width: 720px;
-      }
-      #introduction, #functions, #ListenerObject, #changelog {
-        margin-top: 2.5em;
-      }
-      h1 { font-size: 2em; font-weight: bold; }
-      h2 { font-size: 1.5em; font-weight: bold; }
-      h3 { 
-        font-size: 16px; 
-        font-weight: bold; 
-        line-height: 24px;
-        margin-bottom: 0;
-      }
-      h1,h2,h3 {
-        color: #204060;
-      }
-      h4 {
-        font-size: 14px;
-        font-family: Monospace;
-        font-weight: normal;
-        color: #333;
-      }
-      a, a:visited {
-        background-color: #eaeaea;
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-        padding: 1px 3px;
-        border-radius: 2px;
-      }
-      a:hover {
-        background-color: #303030;
-        color: white;
-        text-decoration: underline;
-      }
-      dt {
-        font-weight: bold;
-      }
-      #contents ul {
-        list-style-type: none;
-        padding-left: 0;
-        margin-top: 0;
-      }
-      #contents ul > li {
-        display: inline-block;
-      }
-      #functions hgroup > h3 {
-        display: inline-block;
-      }
-      #functions hgroup > h4 {
-        display: inline-block;
-        margin-left: 2em;
-        margin-bottom: 0;
-      }
-      pre > code {
-        line-height: 16px;
-        border-radius: 3px;
-        padding: 0 0.5em;
-        border: 1px solid #c0d0e0;
-      }
-      /* }}} */
-    </style>
-  </head>
-  <body>
-    <h1>custom_event.js</h1>
+<!DOCTYPE html>  <html> <head>   <title>custom_event.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               custom_event.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>Created 2010/05/07 by Wolfger Schramm <a href="&#109;&#97;&#105;&#x6C;t&#111;:&#x77;&#x6F;&#108;&#x66;&#x67;&#101;&#x72;&#x40;s&#x70;e&#97;&#114;&#119;&#x6F;&#x6C;&#x66;&#x2E;&#100;&#x65;">&#x77;&#x6F;&#108;&#x66;&#x67;&#101;&#x72;&#x40;s&#x70;e&#97;&#114;&#119;&#x6F;&#x6C;&#x66;&#x2E;&#100;&#x65;</a></p>             </td>             <td class="code">               <div class="highlight"><pre><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Export VERSION</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">root</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">_e</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">VERSION</span><span class="o">:</span> <span class="s2">&quot;0.7.0-pre&quot;</span> <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Export the custom_event object
+for <strong>Node.js</strong> and <strong>"CommonJS"</strong>, with backwards-compatibility for the old <code>require()</code> API.
+If we're not in CommonJS, add <code>_e</code> to the global object.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">exports</span> <span class="o">!==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">module</span> <span class="o">!==</span> <span class="s1">&#39;undefined&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">exports</span> <span class="o">=</span> <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">_e</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nx">exports</span><span class="p">.</span><span class="nx">_e</span> <span class="o">=</span> <span class="nx">_e</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">define</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">define</span><span class="p">.</span><span class="nx">amd</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Register as a named module with AMD.</p>
 
-    <a href="http://github.com/spearwolf/custom_event"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/e6bef7a091f5f3138b8cd40bc3e114258dd68ddf/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub"></a>
+<p>Module name is <code>custom_event</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">define</span><span class="p">(</span><span class="s1">&#39;custom_event&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">_e</span><span class="p">;</span>
+        <span class="p">});</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Module <code>custom_event/global</code> does the same plus setting <code>_e</code> into global namespace.</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">define</span><span class="p">(</span><span class="s1">&#39;custom_event/global&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nx">root</span><span class="p">.</span><span class="nx">_e</span> <span class="o">=</span> <span class="nx">_e</span><span class="p">;</span>
+            <span class="k">return</span> <span class="nx">_e</span><span class="p">;</span>
+        <span class="p">});</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">root</span><span class="p">.</span><span class="nx">_e</span> <span class="o">=</span> <span class="nx">_e</span><span class="p">;</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    
+    <span class="kd">function</span> <span class="nx">logError</span><span class="p">()</span> <span class="p">{</span>   <span class="c1">// {{{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">root</span><span class="p">.</span><span class="nx">console</span> <span class="o">!==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">EventNode</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">parentNode</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="s2">&quot;EventNode&quot;</span><span class="p">;</span>  <span class="c1">// ETYPE</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">parentNode</span> <span class="o">=</span> <span class="nx">parentNode</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">children</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">greedyChildren</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">insatiableChildren</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">callbacks</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">rootNode</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">EventNode</span><span class="p">(),</span> <span class="nx">nextCallbackId</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>EventNode prototype ================================================= {{{</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">fullPathName</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="k">typeof</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span> <span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">_fullPathName</span><span class="p">();</span>
+    <span class="p">};</span>
 
-    <section id="description">
-      <p>
-        CustomEvent is a library for progamming JavaScript in an event-driven manner.
-      </p>
-    </section>
+    <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_fullPathName</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="k">typeof</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;&#39;</span> <span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">_fullPathName</span><span class="p">()</span> <span class="o">+</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">addChild</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">node</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">EventNode</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">name</span> <span class="o">===</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">greedyChar</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">node</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">name</span> <span class="o">===</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">insatiableSequence</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">insatiableChildren</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">node</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">node</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">node</span><span class="p">;</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">splitPath</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">path</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">all_names</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="p">),</span>
+            <span class="nx">name</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
 
-    <section id="contents">
-      <header>
-        <h2>Table Of Contents</h2>
-      </header>
+        <span class="k">while</span> <span class="p">(</span><span class="nx">name</span> <span class="o">===</span> <span class="kc">null</span> <span class="o">||</span> <span class="nx">name</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">name</span> <span class="o">=</span> <span class="nx">all_names</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>
+        <span class="p">}</span>
 
-      <article>
-        <ul>
-          <li><a href="#intro">Introduction</a></li>
-        </ul>
-      </article>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">name</span> <span class="o">===</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">insatiableSequence</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nx">name</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">];</span>
+        <span class="p">}</span>
 
-      <article>
-        <h3>Functions</h3>
-        <ul>
-          <li><a href="#_E_on">_E.on</a></li>
-          <li><a href="#_E_once">_E.once</a></li>
-          <li><a href="#_E_onIdle">_E.onIdle</a></li>
-          <li><a href="#_E_unbind">_E.unbind</a></li>
-          <li><a href="#_E_emit">_E.emit</a></li>
-          <li><a href="#_E_connect">_E.connect</a></li>
-        </ul>
-      </article>
+        <span class="kd">var</span> <span class="nx">rest</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">all_names</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">rest</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">all_names</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">all_names</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">===</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">insatiableSequence</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
 
-      <article>
-        <h3>ListenerObject</h3>
-        <ul>
-          <li><a href="#_emit">emit</a></li>
-          <li><a href="#_unbind">unbind</a></li>
-          <li><a href="#_pause">pause</a></li>
-        </ul>
-      </article>
+        <span class="k">return</span> <span class="p">[</span><span class="nx">name</span><span class="p">,</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span> <span class="o">?</span> <span class="s1">&#39;&#39;</span> <span class="o">:</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="p">)];</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">matchNodes</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">path</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">split_path</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">splitPath</span><span class="p">(</span><span class="nx">path</span><span class="p">),</span>
+            <span class="nx">name</span> <span class="o">=</span> <span class="nx">split_path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="nx">rest</span> <span class="o">=</span> <span class="nx">split_path</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="nx">child</span><span class="p">,</span> <span class="nx">i</span><span class="p">;</span>
 
-      <article>
-        <h3>IdleListenerObject</h3>
-        <ul>
-          <li><a href="#_idle_touch">touch</a></li>
-          <li><a href="#_idle_unbind">unbind</a></li>
-          <li><a href="#_idle_pause">pause</a></li>
-          <li><a href="#_idle_stop">stop</a></li>
-          <li><a href="#_idle_start">start</a></li>
-        </ul>
-      </article>
+        <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">insatiableChildren</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>TODO find insatiableChildren from parents</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">fn</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">insatiableChildren</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="nx">path</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">rest</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">child</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">children</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">name</span> <span class="o">===</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">greedyChar</span> <span class="o">||</span> <span class="nx">name</span> <span class="o">===</span> <span class="nx">child</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">child</span><span class="p">.</span><span class="nx">matchNodes</span><span class="p">(</span><span class="nx">rest</span><span class="p">,</span> <span class="nx">fn</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">matchNodes</span><span class="p">(</span><span class="nx">rest</span><span class="p">,</span> <span class="nx">fn</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">child</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">children</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">name</span> <span class="o">===</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">greedyChar</span> <span class="o">||</span> <span class="nx">name</span> <span class="o">===</span> <span class="nx">child</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">fn</span><span class="p">(</span><span class="nx">child</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">fn</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">findOrCreateNode</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">path</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">split_path</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">splitPath</span><span class="p">(</span><span class="nx">path</span><span class="p">),</span>
+            <span class="nx">name</span> <span class="o">=</span> <span class="nx">split_path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="nx">rest</span> <span class="o">=</span> <span class="nx">split_path</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
 
-      <article>
-        <h3>Evented Modules</h3>
-        <ul>
-          <li><a href="#_E_Module">_E.Module</a></li>
-        </ul>
-      </article>
+        <span class="kd">var</span> <span class="nx">findChild</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">self</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">childName</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">child</span><span class="p">;</span>
+                <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">self</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">child</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">children</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">childName</span> <span class="o">===</span> <span class="nx">child</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="nx">child</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">self</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">child</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">childName</span> <span class="o">===</span> <span class="nx">child</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="nx">child</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+            <span class="p">};</span>
+        <span class="p">})(</span><span class="k">this</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">node</span> <span class="o">=</span> <span class="nx">findChild</span><span class="p">(</span><span class="nx">name</span><span class="p">);</span>
 
-      <article>
-        <h3>ModuleObject</h3>
-        <ul>
-          <li><a href="#_emit">destroy</a></li>
-          <li><a href="#_pause">pause</a></li>
-        </ul>
-      </article>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">node</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">node</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">addChild</span><span class="p">(</span><span class="nx">name</span><span class="p">);</span>
+        <span class="p">}</span>
 
-      <article>
-        <ul>
-          <li><a href="#changelog">CHANGELOG</a></li>
-        </ul>
-      </article>
-    </section>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">rest</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">node</span><span class="p">.</span><span class="nx">findOrCreateNode</span><span class="p">(</span><span class="nx">rest</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">node</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">addCallback</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">callbackFn</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">callback</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nx">eType</span><span class="o">:</span> <span class="s1">&#39;CallbackFn&#39;</span><span class="p">,</span>  <span class="c1">// ETYPE</span>
+            <span class="nx">id</span><span class="o">:</span> <span class="nx">nextCallbackId</span><span class="o">++</span><span class="p">,</span>
+            <span class="nx">name</span><span class="o">:</span> <span class="nx">options</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+            <span class="nx">fn</span><span class="o">:</span> <span class="nx">callbackFn</span><span class="p">,</span>
+            <span class="nx">once</span><span class="o">:</span> <span class="o">!!</span><span class="nx">options</span><span class="p">.</span><span class="nx">once</span><span class="p">,</span>
+            <span class="nx">binding</span><span class="o">:</span> <span class="nx">options</span><span class="p">.</span><span class="nx">binding</span><span class="p">,</span>
+            <span class="nx">paused</span><span class="o">:</span> <span class="kc">false</span>
+        <span class="p">};</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">callbacks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">callback</span><span class="p">;</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">destroyCallbacks</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">ids</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">updated_callbacks</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">j</span><span class="p">,</span> <span class="nx">skip</span><span class="p">,</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">callbacks</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">skip</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">ids</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">callbacks</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">id</span> <span class="o">==</span> <span class="nx">ids</span><span class="p">[</span><span class="nx">j</span><span class="p">])</span> <span class="p">{</span>
+                    <span class="nx">skip</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+                    <span class="o">++</span><span class="nx">count</span><span class="p">;</span>
+                    <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">skip</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">updated_callbacks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">callbacks</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">callbacks</span> <span class="o">=</span> <span class="nx">updated_callbacks</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nx">count</span><span class="p">;</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-18">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-18">&#182;</a>               </div>               <p>===================================================================== }}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">registerEventListener</span><span class="p">(</span><span class="nx">eventPath</span><span class="p">,</span> <span class="nx">callbackFn</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">opts</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+        <span class="nx">opts</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">eventPath</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">listener</span> <span class="o">=</span> <span class="nx">rootNode</span><span class="p">.</span><span class="nx">findOrCreateNode</span><span class="p">(</span><span class="nx">eventPath</span><span class="p">).</span><span class="nx">addCallback</span><span class="p">(</span><span class="nx">callbackFn</span><span class="p">,</span> <span class="nx">opts</span><span class="p">);</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="nx">eType</span><span class="o">:</span> <span class="s1">&#39;EventListener&#39;</span><span class="p">,</span>  <span class="c1">// ETYPE</span>
+            <span class="nx">id</span><span class="o">:</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+            <span class="nx">name</span><span class="o">:</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+            <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">destroy</span><span class="p">(</span><span class="nx">listener</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span> <span class="p">},</span>
+            <span class="nx">action</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">action</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="p">[</span><span class="nx">listener</span><span class="p">.</span><span class="nx">name</span><span class="p">].</span><span class="nx">concat</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">)));</span> <span class="p">},</span>
+            <span class="nx">pause</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">pause</span><span class="p">)</span> <span class="p">{</span> 
+                <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">pause</span> <span class="o">===</span> <span class="s1">&#39;boolean&#39;</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">listener</span><span class="p">.</span><span class="nx">paused</span> <span class="o">=</span> <span class="nx">pause</span><span class="p">;</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">paused</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">registerEventListenerOnce</span><span class="p">(</span><span class="nx">eventPath</span><span class="p">,</span> <span class="nx">callbackFn</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">opts</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+        <span class="nx">opts</span><span class="p">.</span><span class="nx">once</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nx">registerEventListener</span><span class="p">(</span><span class="nx">eventPath</span><span class="p">,</span> <span class="nx">callbackFn</span><span class="p">,</span> <span class="nx">opts</span><span class="p">);</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-20">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-20">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">registerIdleEventListener</span><span class="p">(</span><span class="nx">eventPath</span><span class="p">,</span> <span class="nx">idleTimeout</span><span class="p">,</span> <span class="nx">callbackFn</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">opts</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{},</span> <span class="nx">idleTimer</span><span class="p">,</span> <span class="nx">listener</span><span class="p">,</span> <span class="nx">paused</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">currentTimeout</span> <span class="o">=</span> <span class="nx">idleTimeout</span><span class="p">;</span>
 
-    <section id="introduction">
-      <h2>Introduction</h2>
-      <p>
-        Bla, foo. Namespace is <code>_E</code>.
-      </p>
-    </section>
+        <span class="kd">function</span> <span class="nx">clearTimer</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">idleTimer</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">clearTimeout</span><span class="p">(</span><span class="nx">idleTimer</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="nx">idleTimer</span> <span class="o">=</span> <span class="kc">undefined</span><span class="p">;</span>
+        <span class="p">}</span>
 
-    <section id="functions">
-      <h2>Functions</h2>
+        <span class="kd">function</span> <span class="nx">registerTimer</span><span class="p">(</span><span class="nx">timeout</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">timeout</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">currentTimeout</span> <span class="o">=</span> <span class="nx">timeout</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="nx">clearTimer</span><span class="p">();</span>
+            <span class="nx">idleTimer</span> <span class="o">=</span> <span class="nx">setTimeout</span><span class="p">(</span><span class="nx">callIdleFunc</span><span class="p">,</span> <span class="nx">currentTimeout</span><span class="p">);</span>
+        <span class="p">}</span>
 
-      <article id="_E_on">
-        <hgroup>
-          <h3>_E.on</h3>
-          <h4>_E.on(action, callback_fn, [options])</h4>
-        </hgroup>
-        <p>
-          Register an event listener for given <em>action</em>.<br/>
-          Returns a <a href="#ListenerObject">ListenerObject</a>.
-        </p>
-        <pre><code>
-_E.on("hello/world", function() { console.log(this.name.replace(/\//g, " ")); });
+        <span class="kd">var</span> <span class="nx">api</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nx">eType</span><span class="o">:</span> <span class="s2">&quot;IdleEventListener&quot;</span><span class="p">,</span>  <span class="c1">// ETYPE</span>
 
-// with arguments
-_E.on("foo/bar", function(x, y) { console.log("x=", x, "y=", y); });
-        </code></pre>
-      </article>
+            <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">clearTimer</span><span class="p">();</span>
+                <span class="nx">listener</span><span class="p">.</span><span class="nx">destroy</span><span class="p">();</span>
+            <span class="p">},</span>
 
-      <article id="_E_once">
-        <hgroup>
-          <h3>_E.once</h3>
-          <h4>_E.once(action, callback_fn, [options])</h4>
-        </hgroup>
-        <p>
-          Register an event listener for given <em>action</em>.
-          This has the same behaviour as <a href="#_E_on">_E.on</a> with a single exception:
-          after <em>action</em> is triggered and function <em>callback_fn</em> is called,
-          the listener will be automatically unbound.<br/>
-          Returns a <a href="#ListenerObject">ListenerObject</a>.
-        </p>
-        <pre><code>
-_E.once("foo/bar", function() { console.log("you'll never see this message again!"); })
-        </code></pre>
-      </article>
+            <span class="nx">pause</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">pause_</span><span class="p">,</span> <span class="nx">timeout</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">pause_</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="nx">paused</span><span class="p">;</span>
+                <span class="p">}</span>
+                <span class="nx">paused</span> <span class="o">=</span> <span class="nx">pause_</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">pause_</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">clearTimer</span><span class="p">();</span>
+                    <span class="nx">listener</span><span class="p">.</span><span class="nx">pause</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">idleTimer</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">registerTimer</span><span class="p">(</span><span class="nx">timeout</span><span class="p">);</span>
+                        <span class="nx">listener</span><span class="p">.</span><span class="nx">pause</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
 
-      <article id="_E_onIdle">
-        <hgroup>
-          <h3>_E.onIdle</h3>
-          <h4>_E.on(action, timeout, callback_fn, [options])</h4>
-        </hgroup>
-        <p>
-          Register an idle event listener for <em>action</em>.<br/>
-          Returns a <a href="#IdleListenerObject">IdleListenerObject</a>.
-        </p>
-        <pre><code>
-idle = _E.onIdle("tick/tack", 5000, function() {
-    console.log("5 seconds after last 'tick/tack' action .."); 
-});
+            <span class="nx">start</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">timeout</span><span class="p">)</span> <span class="p">{</span> <span class="k">this</span><span class="p">.</span><span class="nx">pause</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="nx">timeout</span><span class="p">);</span> <span class="p">},</span>
+            <span class="nx">stop</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="k">this</span><span class="p">.</span><span class="nx">pause</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span> <span class="p">},</span>
 
-/* to prevent execution of the idle function, call frequently .. */
-_E.emit("tick/tack");
-/* same */
-idle.touch();
+            <span class="nx">touch</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">action</span><span class="p">();</span> <span class="p">}</span>
+        <span class="p">};</span>
 
-/* or just wait 5 seconds to see idle function in action .. */
-        </code></pre>
-      </article>
+        <span class="kd">function</span> <span class="nx">callIdleFunc</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nx">idleTimer</span> <span class="o">=</span> <span class="kc">undefined</span><span class="p">;</span>
+            <span class="nx">listener</span><span class="p">.</span><span class="nx">pause</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+            <span class="nx">callbackFn</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">api</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">api</span><span class="p">.</span><span class="nx">pause</span><span class="p">())</span> <span class="p">{</span>
+                <span class="nx">registerTimer</span><span class="p">();</span>
+                <span class="nx">listener</span><span class="p">.</span><span class="nx">pause</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
 
-      <article id="_E_unbind">
-        <hgroup>
-          <h3>_E.unbind</h3>
-          <h4>_E.unbind(listener_id)</h4>
-        </hgroup>
-        <p>
-          Unregister an event listener.
-        </p>
-        <pre><code>
-var listener = _E.on("foo/bar", function() { console.log("plah!"); });
+        <span class="nx">listener</span> <span class="o">=</span> <span class="nx">registerEventListener</span><span class="p">(</span><span class="nx">eventPath</span><span class="p">,</span> <span class="nx">registerTimer</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+        <span class="nx">registerTimer</span><span class="p">();</span>
 
-// .. do your awesome business now ..
+        <span class="k">return</span> <span class="nx">api</span><span class="p">;</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-21">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-21">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">createEmitStackTrace</span><span class="p">()</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">_emitStackTrace</span> <span class="o">!==</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">_e</span><span class="p">.</span><span class="nx">_emitStackTrace</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">currentLevel</span><span class="o">:</span> <span class="mi">1</span> <span class="p">};</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="o">++</span><span class="nx">_e</span><span class="p">.</span><span class="nx">_emitStackTrace</span><span class="p">.</span><span class="nx">currentLevel</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">_emitStackTrace</span><span class="p">;</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-22">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-22">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">clearEmitStackTrace</span><span class="p">()</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="o">--</span><span class="nx">_e</span><span class="p">.</span><span class="nx">_emitStackTrace</span><span class="p">.</span><span class="nx">currentLevel</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">_emitStackTrace</span><span class="p">.</span><span class="nx">currentLevel</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">_e</span><span class="p">.</span><span class="nx">_emitStackTrace</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">currentLevel</span><span class="o">:</span> <span class="mi">0</span> <span class="p">};</span>
+        <span class="p">}</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-23">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-23">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">emitEvent</span><span class="p">(</span><span class="nx">eventName</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
 
-listener.unbind();
-        </code></pre>
-      </article>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">debug</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">group</span><span class="p">(</span><span class="s2">&quot;_e.action -&gt;&quot;</span><span class="p">,</span> <span class="nx">eventName</span><span class="p">);</span> <span class="p">}</span>
 
-      <article id="_E_emit">
-        <hgroup>
-          <h3>_E.emit</h3>
-          <h4>_E.emit(action, [args, ..])</h4>
-        </hgroup>
-        <p>
-          Trigger the event <em>action</em>.<br/>
-          Use <em>args</em> as you like. All <em>args</em> will be forwarded to all listener functions (if any).<br/>
-          If last given argument is a function, it will be used as <em>result function</em>
-          and called immediately after all listeners.
-        </p>
-        <pre><code>
-_E.emit("hello/world");      // =&gt; "hello world"
+        <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="p">[],</span>
+            <span class="nx">results</span> <span class="o">=</span> <span class="p">[],</span>
+            <span class="nx">result_fn</span><span class="p">,</span>
+            <span class="nx">i</span><span class="p">,</span> <span class="nx">len</span><span class="p">;</span>
 
-// with arguments
-_E.emit("/foo/bar", 1, 2);   // =&gt; "x= 1, y= 2"
-        </code></pre>
-      </article>
+        <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">len</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">len</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">i</span> <span class="o">===</span> <span class="nx">len</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">result_fn</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">args</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
 
-      <article id="_E_connect">
-        <hgroup>
-          <h3>_E.connect</h3>
-          <h4>_E.connect(action, trigger_action, [trigger_action, ..])</h4>
-        </hgroup>
-        <p>
-          Register the event <em>action</em>.
-          After someone triggered <em>action</em>, all given <em>trigger_actions</em> will be immediately emitted as events.<br/>
-          Give many <em>trigger_actions</em> as you like.<br/>
-          With this function you can <em>connect</em> one action with other actions,
-          without the need to register function callbacks at the time you create such a connection.<br/>
-          Returns a <a href="#ListenerObject">ListenerObject</a>.
-        </p>
-      </article>
-        <pre><code>
-_E.connect("make/world", "hello/world", "foo/bar", "one/more/event");
-        </code></pre>
-    </section>
+        <span class="kd">var</span> <span class="nx">stacktrace</span> <span class="o">=</span> <span class="nx">createEmitStackTrace</span><span class="p">();</span>
 
-    <section id="ListenerObject">
-      <h2>ListenerObject</h2>
-      <p>
-        After registering a <a href="#_E_on">callback function</a> or <a href="#_E_connect">connecting actions</a> you will get a <em>ListenerObject</em> as result.<br/>
-        This object provides you with infos and some (hopefully) useful methods for the listener.<br/>
-      </p>
+        <span class="nx">rootNode</span><span class="p">.</span><span class="nx">matchNodes</span><span class="p">(</span><span class="nx">eventName</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">restPath</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">try</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">destroy_callback_ids</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">call_count</span><span class="p">,</span>
 
-      <h3>Attributes</h3>
-      <dl>
-        <dt>id</dt>
-        <dd>Unique listener id.</dd>
+                    <span class="nx">destroy</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                            <span class="nx">destroy_callback_ids</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
+                        <span class="p">};</span>
+                    <span class="p">},</span>
 
-        <dt>name</dt>
-        <dd>Event <em>action</em> name.</dd>
-      </dl>
-      
-      <h3>Methods</h3>
-      <dl>
-        <dt>emit</dt>
-        <dd><code>emit([args, ..])</code></dd>
-        <dd>Trigger the <em>action</em> &rarr; <code><em>listener</em>.name</code> instantly.</dd>
+                    <span class="nx">pause</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                            <span class="nx">callback</span><span class="p">.</span><span class="nx">paused</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+                        <span class="p">};</span>
+                    <span class="p">},</span>
 
-        <dt>unbind</dt>
-        <dd><code>unbind()</code></dd>
-        <dd>Alias for <code>_E.unbind(<em>listener</em>.id)</code>.</dd>
+                    <span class="nx">result</span><span class="p">,</span>
+                    <span class="nx">context</span><span class="p">,</span>
+                    <span class="nx">callback</span><span class="p">;</span>
 
-        <dt>pause</dt>
-        <dd><code>pause([pause])</code></dd>
-        <dd><em>Pause</em> the callback function temporary. If you set <em>pause</em> to <code>true</code>,
-          next time <em>action</em> &rarr; <code><em>listener</em>.name</code> is triggered, the listener will NOT be invoked.<br/>
-          Setting <em>pause</em> to <code>false</code> will enable the listener again.<br/>
-          Returns the current <em>pause</em> state if called without argument.</dd>
-      </dl>
-      
-    </section>
+                <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">node</span><span class="p">.</span><span class="nx">callbacks</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">callback</span> <span class="o">=</span> <span class="nx">node</span><span class="p">.</span><span class="nx">callbacks</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
 
-    <section id="IdleListenerObject">
-      <h2>IdleListenerObject</h2>
-      <p>
-        After registering a <a href="#_E_onIdle">idle function</a> you will get a <em>IdleListenerObject</em> as result.<br/>
-        This object provides you with infos and some useful methods for the idle listener.<br/>
-      </p>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">.</span><span class="nx">paused</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">continue</span><span class="p">;</span>
+                    <span class="p">}</span>
 
-      <h3>Methods</h3>
-      <dl>
-        <dt>touch</dt>
-        <dd><code>touch()</code></dd>
-        <dd>Alias for <code>idle.emit()</code>.</dd>
+                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nx">callback</span><span class="p">.</span><span class="nx">id</span> <span class="k">in</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">_emitStackTrace</span><span class="p">))</span> <span class="p">{</span>
+                        <span class="nx">stacktrace</span><span class="p">[</span><span class="nx">callback</span><span class="p">.</span><span class="nx">id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
 
-        <dt>unbind</dt>
-        <dd><code>unbind()</code></dd>
-        <dd>Alias for <code>_E.unbind(<em>listener</em>.id)</code>.</dd>
+                        <span class="nx">context</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">binding</span> <span class="o">||</span> <span class="p">{};</span>
+                        <span class="nx">context</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">eventName</span><span class="p">;</span>
+                        <span class="nx">context</span><span class="p">.</span><span class="nx">destroy</span> <span class="o">=</span> <span class="nx">destroy</span><span class="p">(</span><span class="nx">callback</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
 
-        <dt>pause</dt>
-        <dd><code>pause([pause])</code></dd>
-        <dd><em>Pause</em> the idle function temporary. If you set <em>pause</em> to <code>true</code>,
-          next time <em>action</em> &rarr; <code><em>listener</em>.name</code> is triggered, the listener will NOT be invoked.<br/>
-          Setting <em>pause</em> to <code>false</code> will enable the listener again.<br/>
-          Returns the current <em>pause</em> state if called without argument.</dd>
+                        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">context</span><span class="p">.</span><span class="nx">eType</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="nx">context</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="s1">&#39;EventListener&#39;</span><span class="p">;</span>
+                        <span class="p">}</span>
 
-        <dt>stop</dt>
-        <dd><code>stop()</code></dd>
-        <dd>Alias for <code>pause(true)</code></dd>
+                        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">context</span><span class="p">.</span><span class="nx">pause</span> <span class="o">!==</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// don&#39;t overwrite _e.Module&#39;s pause()</span>
+                            <span class="nx">context</span><span class="p">.</span><span class="nx">pause</span> <span class="o">=</span> <span class="nx">pause</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
+                        <span class="p">}</span>
 
-        <dt>start</dt>
-        <dd><code>start()</code></dd>
-        <dd>Alias for <code>pause(false)</code></dd>
-      </dl>
-      
-    </section>
+                        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">restPath</span> <span class="o">!==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="nx">context</span><span class="p">.</span><span class="nx">pathArgs</span> <span class="o">=</span> <span class="nx">restPath</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="p">);</span>
+                            <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">context</span><span class="p">.</span><span class="nx">pathArgs</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">args</span><span class="p">));</span>
+                        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                            <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+                        <span class="p">}</span>
 
-    <section id="_E_Module">
-      <h2>Evented Modules</h2>
-      <p>
-        <em>TODO</em> introduction
-      </p>
+                        <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">.</span><span class="nx">once</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="nx">destroy_callback_ids</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">callback</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+                        <span class="p">}</span>
 
-      <h3>Example</h3>
-      <pre><code>
-fooMod = _E.Module("/foo/mod", {
-    
-    // constructor [optional]
-    _init: function() { 
-        console.log("_init", this); 
-        this.a = 11; 
-    },
+                        <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">!==</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">result</span> <span class="o">!==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="nx">results</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
 
-    'on foo': function() { console.log("/foo/mod/foo"); },
-    'on bar': function(x, y) { console.log("/foo/mod/bar", x, y); },
+                <span class="nx">node</span><span class="p">.</span><span class="nx">destroyCallbacks</span><span class="p">(</span><span class="nx">destroy_callback_ids</span><span class="p">);</span>
 
-    'on hello ..': function(forename, lastname) {
-      console.log('/foo/mod/hello/' + forename + '/' + lastname, arguments);
-    },
+            <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">logError</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
 
-    'on a': function(n) { 
-        var b = this.a;
-        console.log("/foo/mod/a", "a", b, "-&gt;", n);
-        this.a = n;
-        return b;
-    },
+        <span class="nx">clearEmitStackTrace</span><span class="p">();</span>
 
-    'module sub': {
-        'on plah': function() { console.log("/foo/mod/sub/plah", arguments); }
-    }
-});
-      </code></pre>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">result_fn</span> <span class="o">&amp;&amp;</span> <span class="nx">results</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">result_fn</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
+        <span class="p">}</span>
 
-      <h3>Module Methods</h3>
-      <dl>
-        <dt>destroy</dt>
-        <dd><code>destroy()</code></dd>
-        <dd>Unbind all listeners for this module.</dd>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">debug</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">groupEnd</span><span class="p">();</span> <span class="p">}</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">destroy</span><span class="p">(</span><span class="nx">pathOrId</span><span class="p">,</span> <span class="nx">node</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="nx">node</span> <span class="o">=</span> <span class="nx">node</span> <span class="o">||</span> <span class="nx">rootNode</span><span class="p">;</span>
 
-        <dt>pause</dt>
-        <dd><code>pause([pause])</code></dd>
-        <dd><em>Pause</em> the callback function temporary. If you set <em>pause</em> to <code>true</code>,
-          none of the listeners registered by this module will NOT be invoked.<br/>
-          Setting <em>pause</em> to <code>false</code> will enable the module again.<br/>
-          Returns the current <em>pause</em> state if called without argument.</dd>
-      </dl>
-    </section>
+        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">pathOrId</span> <span class="o">===</span> <span class="s1">&#39;number&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">destroyCallbacks</span><span class="p">([</span><span class="nx">pathOrId</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">i</span><span class="p">;</span>
+                <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">node</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">destroy</span><span class="p">(</span><span class="nx">pathOrId</span><span class="p">,</span> <span class="nx">node</span><span class="p">.</span><span class="nx">children</span><span class="p">[</span><span class="nx">i</span><span class="p">]))</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">node</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">destroy</span><span class="p">(</span><span class="nx">pathOrId</span><span class="p">,</span> <span class="nx">node</span><span class="p">.</span><span class="nx">greedyChildren</span><span class="p">[</span><span class="nx">i</span><span class="p">]))</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">node</span><span class="p">.</span><span class="nx">insatiableChildren</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">destroy</span><span class="p">(</span><span class="nx">pathOrId</span><span class="p">,</span> <span class="nx">node</span><span class="p">.</span><span class="nx">insatiableChildren</span><span class="p">[</span><span class="nx">i</span><span class="p">]))</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">connectEventListener</span><span class="p">()</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="kd">var</span> <span class="nx">listener</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">),</span>
+            <span class="nx">action</span> <span class="o">=</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>
+        <span class="k">return</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">action</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
+            <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">j</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">_e</span><span class="p">.</span><span class="nx">action</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="p">[</span><span class="nx">listener</span><span class="p">[</span><span class="nx">j</span><span class="p">]].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">args</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-26">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-26">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">createModule</span><span class="p">(</span><span class="nx">rootPath</span><span class="p">,</span> <span class="nx">module</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// {{{</span>
+        <span class="nx">rootPath</span> <span class="o">=</span> <span class="nx">rootPath</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/\/+$/</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">listener</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">sub_modules</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">annotation</span><span class="p">;</span>
 
-    <section id="changelog">
-      <h2>CHANGELOG</h2>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">debug</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">group</span><span class="p">(</span><span class="s2">&quot;_e.Module -&gt;&quot;</span><span class="p">,</span> <span class="nx">rootPath</span><span class="p">);</span> <span class="p">}</span>
 
-      <dl>
-        <dt>0.6.7</dt>
-        <dd>2012-01-02</dd>
-        <dd>AMD support</dd>
-      </dl>
-      <dl>
-        <dt>0.6.6</dt>
-        <dd>2011-10-07</dd>
-        <dd>Added idle events <code>_E.onIdle</code></dd>
-      </dl>
-      <dl>
-        <dt>0.6.5</dt>
-        <dd>2011-10-04</dd>
-        <dd>Show event action traces if <code>setting _E.options.debug = true</code></dd>
-      </dl>
-      <dl>
-        <dt>0.6.4</dt>
-        <dd>2011-07-28</dd>
-        <dd>Added event path arguments listener syntax, like <code>'on foo ..'</code> for modules.</dd>
-      </dl>
-    </section>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;_init&quot;</span> <span class="k">in</span> <span class="nx">module</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">debug</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;constructor&quot;</span><span class="p">,</span> <span class="nx">rootPath</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">insatiableSequence</span><span class="p">);</span> <span class="p">}</span>
+            <span class="nx">listener</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="nx">rootPath</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">insatiableSequence</span><span class="p">,</span> <span class="nx">module</span><span class="p">.</span><span class="nx">_init</span><span class="p">,</span> <span class="p">{</span> <span class="nx">binding</span><span class="o">:</span> <span class="nx">module</span> <span class="p">}));</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">prop</span> <span class="k">in</span> <span class="nx">module</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">module</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">prop</span><span class="p">))</span> <span class="p">{</span>
+                <span class="nx">annotation</span> <span class="o">=</span> <span class="nx">prop</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/^(on|module) (.+)$/</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">annotation</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">annotation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;on&#39;</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">module</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="nx">prop</span> <span class="o">!==</span> <span class="s1">&#39;_init&#39;</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="nx">annotation</span> <span class="o">=</span> <span class="nx">annotation</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">);</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="nx">annotation</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="k">if</span> <span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">debug</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="nx">rootPath</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">annotation</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span> <span class="p">}</span>
+                                <span class="nx">listener</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">rootPath</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">annotation</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">module</span><span class="p">[</span><span class="nx">prop</span><span class="p">],</span> <span class="p">{</span> <span class="nx">binding</span><span class="o">:</span> <span class="nx">module</span> <span class="p">}));</span>
+                            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">annotation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;..&#39;</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="k">if</span> <span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">debug</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="nx">rootPath</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">annotation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">insatiableSequence</span><span class="p">);</span> <span class="p">}</span>
+                                <span class="nx">listener</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">rootPath</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">annotation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">insatiableSequence</span><span class="p">,</span> <span class="nx">module</span><span class="p">[</span><span class="nx">prop</span><span class="p">],</span> <span class="p">{</span> <span class="nx">binding</span><span class="o">:</span> <span class="nx">module</span> <span class="p">}));</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">annotation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;module&#39;</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">module</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">sub_modules</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">createModule</span><span class="p">(</span><span class="nx">rootPath</span><span class="o">+</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">pathSeparator</span><span class="o">+</span><span class="nx">annotation</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="nx">module</span><span class="p">[</span><span class="nx">prop</span><span class="p">]));</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">_e</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">debug</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">groupEnd</span><span class="p">();</span> <span class="p">}</span>
 
-    <script src="http://yandex.st/highlightjs/6.0/highlight.min.js"></script>
-    <script>
-      hljs.initHighlightingOnLoad();
-    </script>
-    <script src="modernizr.js"></script>
-    <script>
-      Modernizr.load([
-        {
-          load: "../custom_event-min.js",
-          complete: function() {
-            _E.options.debug = true;
-          }
-        }
-      ]);
-    </script>
-  </body>
-</html>
+        <span class="nx">module</span><span class="p">.</span><span class="nx">destroy</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">i</span><span class="p">;</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span><span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">listener</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">destroy</span><span class="p">();</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span><span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">sub_modules</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">sub_modules</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">destroy</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+
+        <span class="kd">var</span> <span class="nx">paused</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="nx">module</span><span class="p">.</span><span class="nx">pause</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">pause</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">pause</span> <span class="o">===</span> <span class="s1">&#39;boolean&#39;</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">paused</span> <span class="o">=</span> <span class="nx">pause</span><span class="p">;</span>
+                <span class="kd">var</span> <span class="nx">i</span><span class="p">;</span>
+                <span class="k">for</span> <span class="p">(</span><span class="nx">i</span><span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">listener</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">pause</span><span class="p">(</span><span class="nx">pause</span><span class="p">);</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="p">(</span><span class="nx">i</span><span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">sub_modules</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">sub_modules</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">pause</span><span class="p">(</span><span class="nx">pause</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="nx">paused</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="nx">module</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="s2">&quot;eModule&quot;</span><span class="p">;</span>  <span class="c1">// ETYPE</span>
+
+        <span class="k">return</span> <span class="nx">module</span><span class="p">;</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>}}}</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-28">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-28">&#182;</a>               </div>               <p>custom_event api</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-29">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-29">&#182;</a>               </div>               <p>Register an EventListener.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">on</span> <span class="o">=</span> <span class="nx">registerEventListener</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-30">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-30">&#182;</a>               </div>               <p>Register an "idle" EventListener.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">idle</span> <span class="o">=</span> <span class="nx">registerIdleEventListener</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-31">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-31">&#182;</a>               </div>               <p>Register an "one-time" EventListener.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">once</span> <span class="o">=</span> <span class="nx">registerEventListenerOnce</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-32">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-32">&#182;</a>               </div>               <p>Emit an Event.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">action</span> <span class="o">=</span> <span class="nx">emitEvent</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-33">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-33">&#182;</a>               </div>               <p>Connect multiple EventListener to an Event.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">connect</span> <span class="o">=</span> <span class="nx">connectEventListener</span><span class="p">;</span>  <span class="c1">// TODO connect groups API</span></pre></div>             </td>           </tr>                               <tr id="section-34">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-34">&#182;</a>               </div>               <p>Destroy a registered EventListener.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">destroy</span> <span class="o">=</span> <span class="nx">destroy</span><span class="p">;</span>
+    </pre></div>             </td>           </tr>                               <tr id="section-35">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-35">&#182;</a>               </div>               <p>module API</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">Module</span> <span class="o">=</span> <span class="nx">createModule</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-36">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-36">&#182;</a>               </div>               <p>options</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">pathSeparator</span><span class="o">:</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
+        <span class="nx">greedyChar</span><span class="o">:</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span>
+        <span class="nx">insatiableSequence</span><span class="o">:</span> <span class="s1">&#39;**&#39;</span><span class="p">,</span>
+        <span class="nx">debug</span><span class="o">:</span> <span class="kc">false</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-37">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-37">&#182;</a>               </div>               <p>debug</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">_e</span><span class="p">.</span><span class="nx">_rootNode</span> <span class="o">=</span> <span class="nx">rootNode</span><span class="p">;</span>
+<span class="p">})();</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
