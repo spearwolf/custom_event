@@ -225,7 +225,7 @@
     // *internal* api
     // --------------
 
-    function registerEventListener(topic, callback, options) {  // {{{
+    function registerEventListener(topic, callback, options) {
         var opts = options || {};
         opts.name = topic;
         var listener = rootNode.findOrCreateNode(topic).addCallback(callback, opts);
@@ -251,16 +251,14 @@
             }
         };
     }
-    // }}}
 
-    function registerEventListenerOnce(topic, callback, options) {  // {{{
+    function registerEventListenerOnce(topic, callback, options) {
         var opts = options || {};
         opts.once = true;
         return registerEventListener(topic, callback, opts);
     }
-    // }}}
 
-    function registerIdleEventListener(eventPath, idleTimeout, callback, options) {  // {{{
+    function registerIdleEventListener(eventPath, idleTimeout, callback, options) {
         var opts = options || {}, idleTimer, listener, paused = false, currentTimeout = idleTimeout;
 
         function clearTimer() {
@@ -323,9 +321,8 @@
 
         return api;
     }
-    // }}}
 
-    function createEmitStackTrace() {  // {{{
+    function createEmitStackTrace() {
         if (typeof _e._emitStackTrace !== 'object') {
             _e._emitStackTrace = { currentLevel: 1, topicPath: [] };
         } else {
@@ -333,17 +330,15 @@
         }
         return _e._emitStackTrace;
     }
-    // }}}
 
-    function clearEmitStackTrace() {  // {{{
+    function clearEmitStackTrace() {
         --_e._emitStackTrace.currentLevel;
         if (_e._emitStackTrace.currentLevel === 0) {
             _e._emitStackTrace = { currentLevel: 0, topicPath: [] };
         }
     }
-    // }}}
 
-    function emitEvent(options_, topic_) {  // {{{
+    function emitEvent(options_, topic_) {
 
         var args = [],
             results = [],
@@ -460,9 +455,8 @@
 
         if (_e.options.trace) { console.groupEnd(); }
     }
-    // }}}
 
-    function destroy(pathOrId, node) {  // {{{
+    function destroy(pathOrId, node) {
         node = node || rootNode;
 
         if (typeof pathOrId === 'number') {
@@ -489,9 +483,8 @@
             }
         }
     }
-    // }}}
 
-    function connectEventListener() {  // {{{
+    function connectEventListener() {
         var listener = Array.prototype.slice.call(arguments),
             topic = listener.shift();
         return _e.on(topic, function() {
@@ -501,9 +494,8 @@
             }
         });
     }
-    // }}}
 
-    function createModule(rootPath, module) {  // {{{
+    function createModule(rootPath, module) {
         rootPath = rootPath.replace(/\/+$/, '');
         var listener = [], sub_modules = [], annotation;
 
@@ -566,7 +558,6 @@
 
         return module;
     }
-    // }}}
 
     // custom_event api
     // ===================
@@ -587,11 +578,13 @@
     //      - think about persistence here..
     // _e.require [topic-a, topic-b, ..], function(topicA, topicB, ..)
 
-    // Emit an Event.
+    // Publish a topic.
     _e.emit = emitEvent;
 
-    // Emit an Event and collect all results (if any).
-    // @see eCollectSpec.js
+    // Publish a topic and collect all results (if any).
+    //
+    // @see test/_e.collect_spec.js
+    //
     _e.collect = function() {
         emitEvent.apply(root, [{ collect: true }].concat(Array.prototype.slice.call(arguments)));
     };
@@ -602,7 +595,7 @@
     // Connect multiple topics together.
     _e.connect = connectEventListener;
 
-    // Destroy a registered EventListener.
+    // Destroy a subscriber (EventListener) by id.
     _e.destroy = destroy;
 
 
@@ -611,7 +604,7 @@
     _e.Module = createModule;
 
 
-    // options
+    // ### _e.options
     _e.options = {
         pathSeparator: '/',
         greedyChar: '*',
@@ -619,6 +612,5 @@
         trace: false
     };
 
-    // debug
     _e._rootNode = rootNode;
 })();
