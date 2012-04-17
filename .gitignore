@@ -3,3 +3,4 @@ old/
 .svn/
 deploy.sh
 .rvmrc
+node_modules/

@@ -24,3 +24,8 @@ rescue LoadError
     abort "Jasmine is not available. In order to run jasmine, you must: (sudo) gem install jasmine"
   end
 end
+
+desc "run tests with mocha framework"
+task :mocha do
+  exec "./node_modules/.bin/mocha --compilers coffee:coffee-script"
+end

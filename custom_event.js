@@ -1,4 +1,30 @@
-// Created 2010/05/07 by Wolfger Schramm <wolfger@spearwolf.de>
+/** custom_event.js -- created at: 2010/05/07
+               _                                   _       _     
+   ___ _ _ ___| |_ ___ _____       ___ _ _ ___ ___| |_    |_|___ 
+  |  _| | |_ -|  _| . |     |     | -_| | | -_|   |  _|_  | |_ -|
+  |___|___|___|_| |___|_|_|_|_____|___|\_/|___|_|_|_| |_|_| |___|
+                            |_____|                     |___|    
+
+---
+Copyright (c) 2010-2012 Wolfger Schramm <wolfger@spearwolf.de>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**/
 (function() {
 
     // Export VERSION
@@ -102,17 +128,18 @@
         var split_path = this.splitPath(path),
             name = split_path[0],
             rest = split_path[1],
-            child, i;
+            node = this,
+            i;
 
-        for (i = 0; i < this.insatiableChildren.length; i++) {
-            // TODO find insatiableChildren from parents
-            fn(this.insatiableChildren[i], path);
+        for (i = 0; i < node.insatiableChildren.length; i++) {
+            fn(node.insatiableChildren[i], path);
         }
+
         if (rest.length > 0) {
             for (i = 0; i < this.children.length; i++) {
-                child = this.children[i];
-                if (name === _e.options.greedyChar || name === child.name) {
-                    child.matchNodes(rest, fn);
+                node = this.children[i];
+                if (name === _e.options.greedyChar || name === node.name) {
+                    node.matchNodes(rest, fn);
                 }
             }
             for (i = 0; i < this.greedyChildren.length; i++) {
@@ -120,9 +147,9 @@
             }
         } else {
             for (i = 0; i < this.children.length; i++) {
-                child = this.children[i];
-                if (name === _e.options.greedyChar || name === child.name) {
-                    fn(child);
+                node = this.children[i];
+                if (name === _e.options.greedyChar || name === node.name) {
+                    fn(node);
                 }
             }
             for (i = 0; i < this.greedyChildren.length; i++) {
@@ -421,7 +448,6 @@
                         }
                         
                         stacktrace.topicPath.pop();
-
                     } else {
                         if (_e.options.trace) { console.log("_e.on -> (skipped/recursion)", callback.name, "["+callback.id+"]", callback); }
                     }
@@ -550,10 +576,11 @@
     }
     // }}}
 
-    // custom_event api
+    // custom_event _public_ api
     // ==================================================================
 
     // Register an EventListener.
+    // @see eOnSpec.js
     _e.on = registerEventListener;
 
     // Register an "idle" EventListener.
@@ -563,30 +590,32 @@
     _e.once = registerEventListenerOnce;
 
     // TODO require
+    //      - think about persistence here..
     // _e.require [topic-a, topic-b, ..], function(topicA, topicB, ..)
 
     // Emit an Event.
     _e.emit = emitEvent;
 
     // Emit an Event and collect all results (if any).
+    // @see eCollectSpec.js
     _e.collect = function() {
         emitEvent.apply(root, [{ collect: true }].concat(Array.prototype.slice.call(arguments)));
     };
 
     // TODO _e.get "topic", function() {}
+    //      should we persist listeners here?
 
     // Connect multiple topics together.
     _e.connect = connectEventListener;
 
     // Destroy a registered EventListener.
     _e.destroy = destroy;
-    
+
+
     // XXX @obsolete
     // module API
     _e.Module = createModule;
 
-    // TODO group
-    // _e.group topicPrefix, function(e) { .. e.on() .. }
 
     // options
     _e.options = {
