@@ -22,6 +22,9 @@
 //
 (function() {
 
+    // Namespace, CommonJS and AMD Support
+    // -----------------------------------
+
     // Export VERSION
     var root = this, _e = { "VERSION": "0.7.0-pre" };
 
@@ -48,17 +51,20 @@
     } else {
         root._e = _e;
     }
-    // }}}
     
-    function logError() {   // {{{
+    // logging utils
+    // -------------
+
+    function logError() {
         if (typeof root.console !== 'undefined') {
             console.error(Array.prototype.slice.call(arguments).join(" "));
         }
     }
-    // }}}
 
+    // EventNode prototype
+    // -------------------
 
-    function EventNode(name, parentNode) {  // {{{
+    function EventNode(name, parentNode) {
         this.eType = "EventNode";  // ETYPE
         this.name = name;
         this.parentNode = parentNode;
@@ -67,22 +73,18 @@
         this.insatiableChildren = [];
         this.callbacks = [];
     }
-    // }}}
 
     var rootNode = new EventNode(), nextCallbackId = 1;
 
-    // EventNode prototype ================================================= {{{
-
-    EventNode.prototype.fullPathName = function () {  // {{{
+    EventNode.prototype.fullPathName = function () {
         return (typeof this.name === 'undefined') ? _e.options.pathSeparator : this._fullPathName();
     };
 
     EventNode.prototype._fullPathName = function () {
         return (typeof this.name === 'undefined') ? '' : this.parentNode._fullPathName() + _e.options.pathSeparator + this.name;
     };
-    // }}}
 
-    EventNode.prototype.addChild = function (name) {  // {{{
+    EventNode.prototype.addChild = function (name) {
         var node = new EventNode(name, this);
         if (name === _e.options.greedyChar) {
             this.greedyChildren.push(node);
@@ -93,9 +95,8 @@
         }
         return node;
     };
-    // }}}
 
-    EventNode.prototype.splitPath = function (path) {  // {{{
+    EventNode.prototype.splitPath = function (path) {
         var all_names = path.split(_e.options.pathSeparator),
             name = null;
 
@@ -117,9 +118,8 @@
 
         return [name, rest.length === 0 ? '' : rest.join(_e.options.pathSeparator)];
     };
-    // }}}
 
-    EventNode.prototype.matchNodes = function (path, fn) {  // {{{
+    EventNode.prototype.matchNodes = function (path, fn) {
         var split_path = this.splitPath(path),
             name = split_path[0],
             rest = split_path[1],
@@ -152,9 +152,8 @@
             }
         }
     };
-    // }}}
 
-    EventNode.prototype.findOrCreateNode = function (path) {  // {{{
+    EventNode.prototype.findOrCreateNode = function (path) {
         var split_path = this.splitPath(path),
             name = split_path[0],
             rest = split_path[1];
@@ -189,9 +188,8 @@
             return node;
         }
     };
-    // }}}
 
-    EventNode.prototype.addCallback = function (callback, options) {  // {{{
+    EventNode.prototype.addCallback = function (callback, options) {
         var callback = {
             eType: 'eCallback',  // ETYPE
             id: nextCallbackId++,
@@ -204,9 +202,8 @@
         this.callbacks.push(callback);
         return callback;
     };
-    // }}}
 
-    EventNode.prototype.destroyCallbacks = function (ids) {  // {{{
+    EventNode.prototype.destroyCallbacks = function (ids) {
         var updated_callbacks = [], i, j, skip, count = 0;
         for (i = 0; i < this.callbacks.length; i++) {
             skip = false;
@@ -224,9 +221,9 @@
         this.callbacks = updated_callbacks;
         return count;
     };
-    // }}}
 
-    // ===================================================================== }}}
+    // *internal* api
+    // --------------
 
     function registerEventListener(topic, callback, options) {  // {{{
         var opts = options || {};
@@ -571,11 +568,13 @@
     }
     // }}}
 
-    // custom_event _public_ api
-    // ==================================================================
+    // custom_event api
+    // ===================
 
-    // Register an EventListener.
+    // Subscribe to a topic.
+    //
     // @see test/_e.on_spec.js
+    //
     _e.on = registerEventListener;
 
     // Register an "idle" EventListener.

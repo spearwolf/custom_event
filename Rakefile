@@ -4,15 +4,18 @@ require "closure-compiler"
 
 HEADER = /((^\s*\/\/.*\n)+)/
 
-task :default => :build
+task :default => [:build, :docs]
 
 desc "Use the Closure Compiler to compress custom_event.js"
 task :build do
-  source  = File.read('custom_event.js')
+  from    = "custom_event.js"
+  to      = "custom_event-min.js"
+
+  source  = File.read from
   header  = source.match(HEADER)
-  #min     = Closure::Compiler.new(:compilation_level => 'ADVANCED_OPTIMIZATIONS').compress(source)
   min     = Closure::Compiler.new.compress(source)
-  File.open('custom_event-min.js', 'w') do |file|
+  puts "compress: #{from} -> #{to}"
+  File.open(to, 'w') do |file|
     file.write header[1].squeeze(' ') + min
   end
 end
@@ -36,5 +39,10 @@ namespace :mocha do
   task :base do
     exec "./node_modules/.bin/mocha --compilers coffee:coffee-script test/_e_spec.coffee"
   end
+end
+
+desc "create the documentation"
+task :docs do
+  exec "./node_modules/.bin/docco custom_event.js"
 end
 

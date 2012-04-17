@@ -9,6 +9,7 @@
     "mocha": "latest",
     "should": "latest",
     "sinon": "latest",
+    "docco": "latest",
     "coffee-script": "latest"
   }
 }
