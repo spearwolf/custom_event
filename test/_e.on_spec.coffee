@@ -15,88 +15,97 @@ describe "_e.on", ->
         a.name.should.equal topic
         a.destroy.should.be.a "function"
 
+
     it "should execute the callback after emit()", ->
 
         topic = "hyperion/aphrodite"
         anotherTopic = "kronos/zeus"
-        resultA = null
-        resultB = null
+        resA = null
+        resB = null
 
-        _e.on topic, (val) -> resultA = val
-        _e.on anotherTopic, (val) -> resultB = val
+        _e.on topic, (val) -> resA = val
+        _e.on anotherTopic, (val) -> resB = val
 
         _e.emit topic, 7
 
-        resultA.should.equal 7
-        should.not.exist resultB
+        resA.should.equal 7
+        should.not.exist resB
 
         _e.emit anotherTopic, 9
 
-        resultA.should.equal 7
-        resultB.should.equal 9
+        resA.should.equal 7
+        resB.should.equal 9
+
 
     it "should return an EventListener with pause() function", ->
 
         topic = "hyperion/aphrodite"
-        resultA = null
-        a = _e.on topic, (val) -> resultA = val
+        resA = null
+        a = _e.on topic, (val) -> resA = val
 
         a.pause.should.be.a "function"
-        should.not.exist resultA
+        should.not.exist resA
         a.pause().should.be.false
 
         _e.emit topic, 1
 
-        resultA.should.equal 1
+        resA.should.equal 1
         a.pause().should.be.false
 
         a.pause true
         _e.emit topic, 2
 
-        resultA.should.equal 1
+        resA.should.equal 1
         a.pause().should.be.true
 
         a.pause false
         _e.emit topic, 3
 
-        resultA.should.equal 3
+        resA.should.equal 3
         a.pause().should.be.false
 
-    #it("should return an EventListener with emit() function", function() {
 
-        #var topic = "hyperion/aphrodite",
-            #resultA = null,
-            #a = _e.on(topic, function(val) { resultA = val; });
+    it "should return an EventListener with emit() function", ->
 
-        #expect(typeof a.emit).toEqual("function");
-        #expect(resultA).toEqual(null);
+        topic = "hyperion/aphrodite"
+        resA = null
+        a = _e.on topic, (val) -> resA = val
 
-        #_e.emit(topic, 1);
-        #expect(resultA).toEqual(1);
-        #a.emit(2);
-        #expect(resultA).toEqual(2);
-    #});
+        a.emit.should.be.a "function"
+        should.not.exist resA
 
-    #it("should return an EventListener with destroy() function", function() {
+        _e.emit topic, 1
 
-        #var topic = "hyperion/aphrodite",
-            #resultA = null,
-            #a = _e.on(topic, function(val) { resultA = val; });
+        resA.should.equal 1
 
-        #expect(typeof a.destroy).toEqual("function");
-        #expect(resultA).toEqual(null);
+        a.emit 2
 
-        #_e.emit(topic, 1);
-        #expect(resultA).toEqual(1);
+        resA.should.equal 2
 
-        #a.destroy();
-        #expect(typeof a.eType).toEqual("undefined");
-        #expect(typeof a.id).toEqual("undefined");
-        #expect(typeof a.name).toEqual("undefined");
-        #expect(typeof a.destroy).toEqual("undefined");
-        #expect(typeof a.emit).toEqual("undefined");
-        #expect(typeof a.pause).toEqual("undefined");
 
-        #_e.emit(topic, 2);
-        #expect(resultA).toEqual(1);
-    #});
+    it "should return an EventListener with destroy() function", ->
+
+        topic = "hyperion/aphrodite"
+        resA = null
+        a = _e.on topic, (val) -> resA = val
+
+        a.destroy.should.be.a "function"
+        should.not.exist resA
+
+        _e.emit topic, 1
+
+        resA.should.equal 1
+
+        a.destroy()
+
+        should.not.exist a.eType
+        should.not.exist a.id
+        should.not.exist a.name
+        should.not.exist a.destroy
+        should.not.exist a.emit
+        should.not.exist a.pause
+
+        _e.emit topic, 2
+
+        resA.should.equal 1
+
