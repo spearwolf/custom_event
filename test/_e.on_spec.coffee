@@ -1,6 +1,8 @@
 should = require 'should'
 _e = require "./../custom_event"
 
+#_e.options.trace = yes
+
 describe "_e.on", ->
 
     it "should return an EventListener", ->

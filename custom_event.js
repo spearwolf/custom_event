@@ -1,4 +1,5 @@
 // custom_event.js
+// ===============
 //
 // Created at 2010/05/07
 // Copyright (c) 2010-2012 Wolfger Schramm <wolfger@spearwolf.de>
@@ -55,11 +56,83 @@
     // logging utils
     // -------------
 
-    function logError() {
-        if (typeof root.console !== 'undefined') {
-            console.error(Array.prototype.slice.call(arguments).join(" "));
+    var log = (function() {
+
+        var has_console = typeof root.console !== 'undefined' && typeof Function === 'function' && typeof Function.prototype.bind === 'function',
+            has_console_group = has_console && typeof root.console.group === 'function',
+            logPrefix = "custom_event.js:",
+            log = {},
+
+            bindConsole = !has_console ? undefined : function(method) {
+                return Function.prototype.bind.call(console[method], console);
+            },
+
+            _error = has_console ? bindConsole("error") : null,
+            _debug = has_console ? bindConsole("log") : null,
+            _trace = has_console ? bindConsole("log") : null,
+            _group = has_console_group ? bindConsole("group") : null,
+
+            groupPrefix = "";
+
+
+        if (has_console) {
+            log.error = function() {
+                _error.apply(console, [groupPrefix+logPrefix].concat(Array.prototype.slice.call(arguments)));
+            };
+            log.debug = function() {
+                if (_e.options.debug) {
+                    _debug.apply(console, [groupPrefix+logPrefix].concat(Array.prototype.slice.call(arguments)));
+                }
+            };
+            log.trace = function() {
+                if (_e.options.trace) {
+                    _trace.apply(console, [groupPrefix+logPrefix].concat(Array.prototype.slice.call(arguments)));
+                }
+            };
+            if (has_console_group) {
+                log.debugGroup = function() {
+                    if (_e.options.debug) {
+                        _group.apply(console, [groupPrefix+logPrefix].concat(Array.prototype.slice.call(arguments)));
+                    }
+                };
+                log.debugGroupEnd = function() {
+                    if (_e.options.debug) {
+                        console.groupEnd();
+                    }
+                };
+                log.traceGroup = function() {
+                    if (_e.options.trace) {
+                        _group.apply(console, [groupPrefix+logPrefix].concat(Array.prototype.slice.call(arguments)));
+                    }
+                };
+                log.traceGroupEnd = function() {
+                    if (_e.options.trace) {
+                        console.groupEnd();
+                    }
+                };
+            } else {
+                log.debugGroup = function() {
+                    if (_e.options.debug) {
+                        _debug.apply(root, [groupPrefix+logPrefix].concat(Array.prototype.slice.call(arguments)));
+                        groupPrefix += "    ";
+                    }
+                };
+                log.traceGroup = function() {
+                    if (_e.options.trace) {
+                        _trace.apply(root, [groupPrefix+logPrefix].concat(Array.prototype.slice.call(arguments)));
+                        groupPrefix += "    ";
+                    }
+                };
+                log.traceGroupEnd = log.debugGroupEnd = function() {
+                    groupPrefix = groupPrefix.substr(0, groupPrefix.length - 4);
+                };
+            }
+        } else {
+            log.error = log.debug = log.trace = log.traceGroup = log.traceGroupEnd = function() {};
         }
-    }
+        return log;
+    })();
+
 
     // EventNode prototype
     // -------------------
@@ -365,7 +438,7 @@
             }
         }
 
-        if (_e.options.trace) { console.group("_e.emit ->", topic); }
+        log.traceGroup("_e.emit ->", topic);
 
         var stacktrace = createEmitStackTrace();
 
@@ -394,7 +467,7 @@
                     callback = node.callbacks[i];
 
                     if (callback.paused) {
-                        if (_e.options.trace) { console.log("_e.on -> (paused)", callback.name, "["+callback.id+"]", callback); }
+                        log.trace("_e.on -> (paused)", callback.name, "["+callback.id+"]", callback);
                         continue;
                     }
 
@@ -420,9 +493,7 @@
                             args_ = context.pathArgs.concat(args);
                         }
 
-                        if (_e.options.trace) {
-                            console.log("_e.on ->", callback.name, "["+callback.id+"]", callback, "args=", args_);
-                        }
+                        log.trace("_e.on ->", callback.name, "["+callback.id+"]", callback, "args=", args_);
 
                         result = callback.fn.apply(context, args_);
 
@@ -436,14 +507,14 @@
                         
                         stacktrace.topicPath.pop();
                     } else {
-                        if (_e.options.trace) { console.log("_e.on -> (skipped/recursion)", callback.name, "["+callback.id+"]", callback); }
+                        log.error("_e.on -> (skipped/recursion)", callback.name, "["+callback.id+"]", callback);
                     }
                 }
 
                 node.destroyCallbacks(destroy_callback_ids);
 
             } catch (error) {
-                logError(error);
+                log.error(error);
             }
         });
 
@@ -453,7 +524,7 @@
             result_fn.apply(root, results);
         }
 
-        if (_e.options.trace) { console.groupEnd(); }
+        log.traceGroupEnd();
     }
 
     function destroy(pathOrId, node) {
@@ -499,10 +570,10 @@
         rootPath = rootPath.replace(/\/+$/, '');
         var listener = [], sub_modules = [], annotation;
 
-        if (_e.options.trace) { console.group("_e.Module ->", rootPath); }
+        log.debugGroup("_e.Module ->", rootPath);
 
         if ("_init" in module) {
-            if (_e.options.trace) { console.log("constructor", rootPath+_e.options.pathSeparator+_e.options.insatiableSequence); }
+            log.debug("constructor", rootPath+_e.options.pathSeparator+_e.options.insatiableSequence);
             listener.push(_e.once(rootPath+_e.options.pathSeparator+_e.options.insatiableSequence, module._init, { binding: module }));
         }
         for (var prop in module) {
@@ -513,10 +584,10 @@
                         if (prop !== '_init') {
                             annotation = annotation[2].split(" ");
                             if (annotation.length === 1) {
-                                if (_e.options.trace) { console.log("on", rootPath+_e.options.pathSeparator+annotation[0]); }
+                                log.debug("on", rootPath+_e.options.pathSeparator+annotation[0]);
                                 listener.push(_e.on(rootPath+_e.options.pathSeparator+annotation[0], module[prop], { binding: module }));
                             } else if (annotation[1] === '..') {
-                                if (_e.options.trace) { console.log("on", rootPath+_e.options.pathSeparator+annotation[0]+_e.options.pathSeparator+_e.options.insatiableSequence); }
+                                log.debug("on", rootPath+_e.options.pathSeparator+annotation[0]+_e.options.pathSeparator+_e.options.insatiableSequence);
                                 listener.push(_e.on(rootPath+_e.options.pathSeparator+annotation[0]+_e.options.pathSeparator+_e.options.insatiableSequence, module[prop], { binding: module }));
                             }
                         }
@@ -527,7 +598,7 @@
                 }
             }
         }
-        if (_e.options.trace) { console.groupEnd(); }
+        log.debugGroupEnd();
 
         module.destroy = function() {
             var i;
@@ -562,25 +633,39 @@
     // custom_event api
     // ===================
 
+    // ### _e.on( *topic* , *callback* )
+    //
     // Subscribe to a topic.
     //
     // @see test/_e.on_spec.js
     //
     _e.on = registerEventListener;
 
+    // ### _e.idle( *topic* , *idleTimeout* , *callback* )
+    //
     // Register an "idle" EventListener.
+    //
     _e.idle = registerIdleEventListener;
 
-    // Register an "one-time" EventListener.
+    // ### _e.once( *topic* , *callback* )
+    //
+    // Subscribe a "one-time" callback to a topic.
+    //
     _e.once = registerEventListenerOnce;
 
     // TODO require
     //      - think about persistence here..
     // _e.require [topic-a, topic-b, ..], function(topicA, topicB, ..)
 
-    // Publish a topic.
+
+    // ### _e.emit( *topic* , [ *arg*, .. ] )
+    //
+    // Publish an event to a specific topic.
+    //
     _e.emit = emitEvent;
 
+    // ### _e.collect( *topic* , [ *arg*, .. ], *callback* )
+    //
     // Publish a topic and collect all results (if any).
     //
     // @see test/_e.collect_spec.js
@@ -605,12 +690,25 @@
 
 
     // ### _e.options
+
     _e.options = {
+        // - **pathSeparator:** char for path separation
         pathSeparator: '/',
+        // - **greedyChar:** char for wildcard topics
         greedyChar: '*',
+        // - **insatiableSequence:** char sequence for double-wildcard topics
         insatiableSequence: '**',
-        trace: false
+        // - **trace:** enable _trace_ log
+        trace: false,
+        // - **debug:** enable _debug_ log
+        debug: false
     };
 
+    // ### misc exports
+
+    // _rootNode_ for deep insight.
     _e._rootNode = rootNode;
+
+    // logger.
+    _e.log = log;
 })();
