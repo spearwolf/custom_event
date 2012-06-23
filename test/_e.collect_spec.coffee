@@ -33,3 +33,18 @@ describe "_e.collect", ->
             should.not.exist d
 
 
+    it "should collect all results from a double-wildcarded topic", ->
+
+        _e.on "hades/a", -> 21
+        _e.on "hades/b", -> 22
+        _e.on "hades/c", -> null
+        _e.on "hades/b/c", -> 23
+        _e.on "hades/b/c/dd", -> 24
+
+        _e.collect "hades/**", (a, b, c, d, e) ->
+            a.should.equal 21
+            b.should.equal 22
+            c.should.equal 23
+            d.should.equal 24
+            should.not.exist e
+

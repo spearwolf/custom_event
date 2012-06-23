@@ -31,7 +31,7 @@ end
 
 desc "run tests with mocha framework"
 task :mocha do
-  exec "./node_modules/.bin/mocha --compilers coffee:coffee-script"
+  exec "./node_modules/.bin/mocha --compilers coffee:coffee-script -R spec"
 end
 
 namespace :mocha do
