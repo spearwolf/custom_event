@@ -20,23 +20,28 @@ task :build do
   end
 end
 
-begin
-  require 'jasmine'
-  load 'jasmine/tasks/jasmine.rake'
-rescue LoadError
-  task :jasmine do
-    abort "Jasmine is not available. In order to run jasmine, you must: (sudo) gem install jasmine"
-  end
-end
+#begin
+  #require 'jasmine'
+  #load 'jasmine/tasks/jasmine.rake'
+#rescue LoadError
+  #task :jasmine do
+    #abort "Jasmine is not available. In order to run jasmine, you must: (sudo) gem install jasmine"
+  #end
+#end
 
-desc "run tests with mocha framework"
+desc "run all tests"
 task :mocha do
   exec "./node_modules/.bin/mocha --compilers coffee:coffee-script -R spec"
 end
 
 namespace :mocha do
-  desc "run base tests with mocha framework"
-  task :base do
+  desc "run all tests using the nyan cat!"
+  task :nyan do
+    exec "./node_modules/.bin/mocha --compilers coffee:coffee-script -R nyan"
+  end
+
+  desc "run the custom_event.js base testsuite only"
+  task :e_base do
     exec "./node_modules/.bin/mocha --compilers coffee:coffee-script test/_e_spec.coffee"
   end
 end

@@ -145,6 +145,7 @@
         this.greedyChildren = [];
         this.insatiableChildren = [];
         this.callbacks = [];
+        //this.eValue = undefined;
     }
 
     var rootNode = new EventNode(), nextCallbackId = 1;
@@ -226,10 +227,11 @@
         }
     };
 
-    EventNode.prototype.findOrCreateNode = function (path) {
+    EventNode.prototype.findOrCreateNode = function (path, findGreedy) {
         var split_path = this.splitPath(path),
             name = split_path[0],
-            rest = split_path[1];
+            rest = split_path[1],
+            findGreedy = typeof findGreedy === 'undefined' ? true : findGreedy;
 
         var findChild = (function (self) {
             return function (childName) {
@@ -240,10 +242,12 @@
                         return child;
                     }
                 }
-                for (i = 0; i < self.greedyChildren.length; i++) {
-                    child = self.greedyChildren[i];
-                    if (childName === child.name) {
-                        return child;
+                if (findGreedy) {
+                    for (i = 0; i < self.greedyChildren.length; i++) {
+                        child = self.greedyChildren[i];
+                        if (childName === child.name) {
+                            return child;
+                        }
                     }
                 }
                 return null;
@@ -297,6 +301,55 @@
 
     // *internal* api
     // --------------
+
+    function findValueObject(topic) {
+        var node = rootNode.findOrCreateNode(topic, false);
+        if (typeof node.eValue === 'undefined') {
+            node.eValue = {
+                eType: "ValueObject",
+
+                data: undefined,
+
+                initialized: false,
+                getterQueue: [],
+                listener: [],
+
+                set: function(newValue) {
+                    var i;
+                    this.data = newValue;
+
+                    if (!this.initialized) {
+                        for (i = 0; i < this.getterQueue.length; i++) {
+                            try {
+                                this.getterQueue[i](this.data);
+                            } catch (e) {
+                                log.error(e);
+                            }
+                        }
+                        delete this.getterQueue;
+                        this.initialized = true;
+                    }
+                    if (this.listener.length > 0) {
+                        // TODO inform all subscriber
+                    }
+                    return this.data;
+                },
+
+                get: function(callback) {
+                    if (this.initialized) {
+                        callback(this.data);
+                    } else {
+                        this.getterQueue.push(callback);
+                    }
+                },
+
+                isDefined: function() {
+                    return this.initialized;
+                }
+            };
+        }
+        return node.eValue;
+    }
 
     function registerEventListener(topic, callback, options) {
         var opts = options || {};
@@ -483,9 +536,9 @@
                         }
 
                         // don't overwrite _e.Module's pause()
-                        if (typeof context.pause !== 'function') {
-                            context.pause = pause(callback);
-                        }
+                        //if (typeof context.pause !== 'function') {
+                            //context.pause = pause(callback);
+                        //}
 
                         args_ = args;
                         if (typeof restPath !== 'undefined') {
@@ -561,11 +614,16 @@
         return _e.on(topic, function() {
             var args = Array.prototype.slice.call(arguments);
             for (var j = 0; j < listener.length; ++j) {
-                _e.emit.apply(root, [listener[j]].concat(args));
+                if (typeof listener[j] === 'string') {
+                    _e.emit.apply(root, [listener[j]].concat(args));
+                } else if (typeof listener[j] === 'object' && listener[j].eType === 'ValueObject') {
+                    listener[j].set(args[0]);
+                }
             }
         });
     }
 
+    /*
     function createModule(rootPath, module) {
         rootPath = rootPath.replace(/\/+$/, '');
         var listener = [], sub_modules = [], annotation;
@@ -629,6 +687,9 @@
 
         return module;
     }
+    */
+
+
 
     // custom_event api
     // ===================
@@ -653,11 +714,6 @@
     //
     _e.once = registerEventListenerOnce;
 
-    // TODO require
-    //      - think about persistence here..
-    // _e.require [topic-a, topic-b, ..], function(topicA, topicB, ..)
-
-
     // ### _e.emit( *topic* , [ *arg*, .. ] )
     //
     // Publish an event to a specific topic.
@@ -674,19 +730,27 @@
         emitEvent.apply(root, [{ collect: true }].concat(Array.prototype.slice.call(arguments)));
     };
 
-    // TODO _e.get "topic", function() {}
-    //      should we persist listeners here?
-
     // Connect multiple topics together.
     _e.connect = connectEventListener;
 
     // Destroy a subscriber (EventListener) by id.
     _e.destroy = destroy;
 
+    // ### _e.val( *topic* )
+    //
+    // Find ValueObject for given topic.
+    //
+    _e.val = findValueObject;
+
+    // ### _e.get( *topic*, *callback* )
+    //
+    _e.get = function(topic, callback) {
+        _e.val(topic).get(callback);
+    };
 
     // XXX @obsolete
     // module API
-    _e.Module = createModule;
+    //_e.Module = createModule;
 
 
     // ### _e.options

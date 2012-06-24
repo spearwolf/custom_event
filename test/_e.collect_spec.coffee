@@ -5,18 +5,20 @@ describe "_e.collect", ->
 
     it "should collect all results from a topic", ->
 
-        topic = "gaia/foo"
+        TOPIC = "gaia/foo"
 
-        _e.on topic, -> 1
-        _e.on topic, -> 2
-        _e.on topic, -> 3
-        _e.on topic, -> undefined
+        _e.on TOPIC, -> 1
+        _e.on TOPIC, -> 2
+        _e.on TOPIC, -> 3
+        _e.on TOPIC, -> undefined
+        _e.on TOPIC, -> false
 
-        _e.collect topic, (a, b, c, d) ->
+        _e.collect TOPIC, (a, b, c, d, e) ->
             a.should.equal 1
             b.should.equal 2
             c.should.equal 3
-            should.not.exist d
+            d.should.equal false
+            should.not.exist e
 
 
     it "should collect all results from a wildcard topic", ->

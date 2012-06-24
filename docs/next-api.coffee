@@ -1,3 +1,78 @@
+# NEXT FEATURES TO IMPLEMENT -->
+
+
+# 1) bundles
+# ----------
+bundle = _e.bundle()
+bundle.on "mod/foo/bar", (bar) -> console.log bar
+
+# or
+bundle = _e.bundle "mod/foo"
+bundle.on "bar", (bar) -> console.log bar
+
+# use all event functions from _e
+# -  bundle.once
+# -  bundle.idle
+# -  bundle.connect
+bundle.pause true, except: "bar", only: ["foo"]
+bundle.destroy()
+
+
+# 2) values
+# ----------
+
+# GET
+_e.get "foo/bar", (val) -> console.log "foo/bar -> #{val}"       # --> DONE!
+# .. is a shortcut for ..
+_e.val("foo/bar").get (val) -> console.log "foo/bar -> #{val}"   # --> DONE!
+
+# SET
+_e.val("foo/bar").set(23)   # DONE!
+
+# CONNECT
+_e.connect "a/b/c", "d/e/f", _e.val("foo/bar")       # calling _e.val(..).set     --> DONE!
+_e.connect _e.val("foo/bar"), "foo/bar/updated"      # _e.val(..) changed trigger
+
+# ON
+_e.on _e.val("foo/bar"), (val) -> console.log "foo/bar -> #{val}"
+                                                     # _e.val(..) changed trigger
+
+
+# 3) connect extension
+# --------------------
+
+# (FILTER) --> GUARDS!
+_e.connect "foo/bar", "test/xyz", (x) -> x != 0      # connect guard
+
+# MORE FLEXIBLE CONNECTS
+_e.connect ["a/b/c", "d/e/f"], "foo/bar"             # call "foo/bar" after "a/b/c" or "d/e/f"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#========================
+#THINKTANK
+#========================
+
 
 bar = _e.val 'foo/bar'
 
@@ -57,17 +132,3 @@ _e.mod "mod/a",
     'on foo': () -> log "foo!"
 
 # .. dafür bundles
-bundle = _e.bundle()
-bundle.on "mod/foo/bar", (bar) -> console.log bar
-
-# or
-bundle = _e.bundle "mod/foo"
-bundle.on "bar", (bar) -> console.log bar
-
-# use all event functions from _e
-# -  bundle.once
-# -  bundle.idle
-# -  bundle.connect
-bundle.pause()
-bundle.destroy()
-
