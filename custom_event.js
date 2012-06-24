@@ -336,15 +336,23 @@
                 },
 
                 get: function(callback) {
-                    if (this.initialized) {
-                        callback(this.data);
+                    if (typeof callback === 'function') {
+                        if (this.initialized) {
+                            callback(this.data);
+                        } else {
+                            this.getterQueue.push(callback);
+                        }
                     } else {
-                        this.getterQueue.push(callback);
+                        return this.data;
                     }
                 },
 
                 isDefined: function() {
                     return this.initialized;
+                },
+
+                isEqual: function(val) {
+                    return this.data === val;
                 }
             };
         }
@@ -746,6 +754,12 @@
     //
     _e.get = function(topic, callback) {
         _e.val(topic).get(callback);
+    };
+
+    // ### _e.set( *topic*, *value* )
+    //
+    _e.set = function(topic, value) {
+        _e.val(topic).set(value);
     };
 
     // XXX @obsolete
