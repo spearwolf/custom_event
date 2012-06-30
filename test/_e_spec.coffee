@@ -16,4 +16,7 @@ describe "_e", ->
         _e.connect.should.be.a "function"
         _e.destroy.should.be.a "function"
 
+        _e.val.should.be.a "function"
+        _e.get.should.be.a "function"
+        _e.set.should.be.a "function"
 

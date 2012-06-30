@@ -11,6 +11,8 @@ describe "_e.on", ->
 
         a = _e.on TOPIC, -> true
 
+        #console.log "EventListener -->", a
+
         should.exist a
         a.should.be.a "object"
         a.eType.should.equal "EventListener"

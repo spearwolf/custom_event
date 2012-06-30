@@ -27,7 +27,7 @@
     // -----------------------------------
 
     // Export VERSION
-    var root = this, _e = { "VERSION": "0.7.0-pre" };
+    var root = this, _e = { "VERSION": "0.7.0-pre2" };
 
     // Export the custom_event object
     // for **Node.js** and **"CommonJS"**, with backwards-compatibility for the old `require()` API.
@@ -52,7 +52,7 @@
     } else {
         root._e = _e;
     }
-    
+
     // logging utils
     // -------------
 
@@ -134,18 +134,28 @@
     })();
 
 
+    var ETYPE_EVENT_NODE = "EventNode",
+        ETYPE_CALLBACK = "eCallback",
+        ETYPE_VALUE_OBJECT = "ValueObject",
+        ETYPE_VALUE_FUNCTION = "ValueFunction",
+        ETYPE_VALUE_CHANGE_LISTENER = "ValueChangeListener",
+        ETYPE_EVENT_LISTENER = "EventListener",
+        ETYPE_IDLE_EVENT_LISTENER = "IdleEventListener";
+
+
     // EventNode prototype
     // -------------------
 
     function EventNode(name, parentNode) {
-        this.eType = "EventNode";  // ETYPE
+        this.eType = ETYPE_EVENT_NODE;  // ETYPE
         this.name = name;
         this.parentNode = parentNode;
         this.children = [];
         this.greedyChildren = [];
         this.insatiableChildren = [];
         this.callbacks = [];
-        //this.eValue = undefined;
+        //this.eValueObject
+        //this.eValueFunction
     }
 
     var rootNode = new EventNode(), nextCallbackId = 1;
@@ -268,7 +278,7 @@
 
     EventNode.prototype.addCallback = function (callback, options) {
         var callback = {
-            eType: 'eCallback',  // ETYPE
+            eType: ETYPE_CALLBACK,  // ETYPE
             id: nextCallbackId++,
             name: options.name,
             fn: callback,
@@ -304,86 +314,147 @@
 
     function findValueObject(topic) {
         var node = rootNode.findOrCreateNode(topic, false);
-        if (typeof node.eValue === 'undefined') {
-            node.eValue = {
-                eType: "ValueObject",
+        if (typeof node.eValueObject === 'undefined') {
+
+            node.eValueObject = {
+                eType: ETYPE_VALUE_OBJECT,
+                name: topic,
 
                 data: undefined,
 
                 initialized: false,
                 getterQueue: [],
-                listener: [],
+                listener: []
+            };
 
-                set: function(newValue) {
+            node.eValueFunction = (function(valObj) {
+
+                var fn = function() {
+                    if (arguments.length === 0) {
+                        return node.eValueFunction.get();
+                    } else {
+                        return node.eValueFunction.set(arguments[0]);
+                    }
+                };
+
+                fn.eType = ETYPE_VALUE_FUNCTION;
+                fn.eValueObject = valObj;
+
+                fn.set = function(newValue) {
                     var i;
-                    this.data = newValue;
+                    valObj.data = newValue;
 
-                    if (!this.initialized) {
-                        for (i = 0; i < this.getterQueue.length; i++) {
+                    if (!valObj.initialized) {
+                        // inform all early-bird getter
+                        for (i = 0; i < valObj.getterQueue.length; i++) {
                             try {
-                                this.getterQueue[i](this.data);
+                                valObj.getterQueue[i](valObj.data);
                             } catch (e) {
-                                log.error(e);
+                                log.error("e_val getter trouble", e);
                             }
                         }
-                        delete this.getterQueue;
-                        this.initialized = true;
+                        delete valObj.getterQueue;
+                        valObj.initialized = true;
                     }
-                    if (this.listener.length > 0) {
-                        // TODO inform all subscriber
+                    // inform all subscriber
+                    for (i = 0; i < valObj.listener.length; i++) {
+                        try {
+                            valObj.listener[i](valObj.data);
+                        } catch (e) {
+                            log.error("e_val change listener trouble", e);
+                        }
                     }
-                    return this.data;
-                },
+                    return valObj.data;
+                };
 
-                get: function(callback) {
+                fn.on = function(callback) {
+                    valObj.listener.push(callback);
+                    // TODO return id for later deletion!
+                };
+
+                fn.get = function(callback) {
                     if (typeof callback === 'function') {
-                        if (this.initialized) {
-                            callback(this.data);
+                        if (valObj.initialized) {
+                            callback(valObj.data);
                         } else {
-                            this.getterQueue.push(callback);
+                            valObj.getterQueue.push(callback);
                         }
                     } else {
-                        return this.data;
+                        return valObj.data;
                     }
-                },
+                };
 
-                isDefined: function() {
-                    return this.initialized;
-                },
+                fn.isEqual = function(val) { return valObj.data === val; };
+                fn.isDefined = function() { return valObj.initialized; };
 
-                isEqual: function(val) {
-                    return this.data === val;
-                }
-            };
+                // TODO id
+                // TODO fn.paused = false;
+                // TODO destroy
+
+                return fn;
+            })(node.eValueObject);
         }
-        return node.eValue;
+
+        return node.eValueFunction;
     }
 
     function registerEventListener(topic, callback, options) {
-        var opts = options || {};
-        opts.name = topic;
-        var listener = rootNode.findOrCreateNode(topic).addCallback(callback, opts);
-        return {
-            eType: 'EventListener',  // ETYPE
-            id: listener.id,
-            name: listener.name,
-            destroy: function() {
-                _e.destroy(listener.id);
-                delete this.eType;
-                delete this.id;
-                delete this.name;
-                delete this.destroy;
-                delete this.emit;
-                delete this.pause;
-            },
-            emit: function() { _e.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
-            pause: function(pause) { 
-                if (typeof pause === 'boolean') {
-                    listener.paused = pause;
+        var opts = options || {},
+            listener = null;
+
+        if (typeof topic === 'string') {
+            opts.name = topic;
+            listener = rootNode.findOrCreateNode(topic).addCallback(callback, opts);
+
+            return {
+                eType: ETYPE_EVENT_LISTENER,  // ETYPE
+                id: listener.id,
+                name: listener.name,
+                destroy: function() {
+                    _e.destroy(listener.id);
+                    delete this.eType;
+                    delete this.id;
+                    delete this.name;
+                    delete this.destroy;
+                    delete this.emit;
+                    delete this.pause;
+                },
+                emit: function() { _e.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
+                pause: function(pause) {
+                    if (typeof pause === 'boolean') {
+                        return listener.paused = pause;
+                    }
+                    return listener.paused;
                 }
-                return listener.paused;
-            }
-        };
+            };
+        } else if (typeof topic === 'function' && topic.eType === ETYPE_VALUE_FUNCTION) {
+            //opts.name = topic.eValueObject.name;
+            //listener = topic;
+            topic.on(callback);
+            //listener.onChange(callback);
+
+            return {
+                eType: ETYPE_VALUE_CHANGE_LISTENER,  // ETYPE
+                //id: listener.id,
+                name: topic.eValueObject.name
+                //destroy: function() {
+                    //_e.destroy(listener.id);
+                    //delete this.eType;
+                    //delete this.id;
+                    //delete this.name;
+                    //delete this.destroy;
+                    //delete this.emit;
+                    //delete this.pause;
+                //},
+                //emit: function() { _e.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
+                //pause: function(pause) {
+                    //if (typeof pause === 'boolean') {
+                        //return listener.paused = pause;
+                    //}
+                    //return listener.paused;
+                //}
+            };
+        }
     }
 
     function registerEventListenerOnce(topic, callback, options) {
@@ -411,7 +482,7 @@
         }
 
         var api = {
-            eType: "IdleEventListener",  // ETYPE
+            eType: ETYPE_IDLE_EVENT_LISTENER,  // ETYPE
 
             destroy: function() {
                 clearTimer();
@@ -540,7 +611,7 @@
                         context.destroy = destroy(callback.id);
 
                         if (typeof context.eType === 'undefined') {
-                            context.eType = 'EventListener';  // ???
+                            context.eType = ETYPE_EVENT_LISTENER;  // ???
                         }
 
                         // don't overwrite _e.Module's pause()
@@ -565,7 +636,7 @@
                         if (result !== null && typeof result !== 'undefined') {
                             results.push(result);
                         }
-                        
+
                         stacktrace.topicPath.pop();
                     } else {
                         log.error("_e.on -> (skipped/recursion)", callback.name, "["+callback.id+"]", callback);
@@ -589,6 +660,7 @@
     }
 
     function destroy(pathOrId, node) {
+        // TODO make it faster - use an internal id -> node reference hash
         node = node || rootNode;
 
         if (typeof pathOrId === 'number') {
@@ -624,8 +696,8 @@
             for (var j = 0; j < listener.length; ++j) {
                 if (typeof listener[j] === 'string') {
                     _e.emit.apply(root, [listener[j]].concat(args));
-                } else if (typeof listener[j] === 'object' && listener[j].eType === 'ValueObject') {
-                    listener[j].set(args[0]);
+                } else if (typeof listener[j] === 'function' && listener[j].eType === ETYPE_VALUE_FUNCTION) {
+                    listener[j](args[0]);
                 }
             }
         });

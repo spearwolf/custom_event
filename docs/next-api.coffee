@@ -6,9 +6,35 @@
 bundle = _e.bundle()
 bundle.on "mod/foo/bar", (bar) -> console.log bar
 
+# bundle.modFooBar(11)
+
+
 # or
-bundle = _e.bundle "mod/foo"
-bundle.on "bar", (bar) -> console.log bar
+_e.bundle "mod/foo" (bundle) ->
+    bundle.on "bar", (bar) -> console.log bar
+
+# bundle.bar(12)
+
+# define bundle values
+bundle.val "foo" [, "plah!"]
+
+bundle.values
+    foo: "plah!"
+    yzx: [1,2,3]
+
+# read value
+bundle.foo()
+bundle.foo.get()
+bundle.foo (foo) -> ...
+bundle.foo.on (foo) -> ...
+bundle.foo.connect "/bundle/foo/changed"
+#bundle.getFoo()
+
+# write value
+bundle.foo("bar")
+bundle.foo.set("bar")
+#bundle.setFoo("bar")
+
 
 # use all event functions from _e
 # -  bundle.once
@@ -28,13 +54,14 @@ _e.val("foo/bar").get (val) -> console.log "foo/bar -> #{val}"   # --> DONE!
 
 # SET
 _e.val("foo/bar").set(23)   # DONE!
+_e.set "foo/bar", 23        # DONE!
 
 # CONNECT
 _e.connect "a/b/c", "d/e/f", _e.val("foo/bar")       # calling _e.val(..).set     --> DONE!
 _e.connect _e.val("foo/bar"), "foo/bar/updated"      # _e.val(..) changed trigger
 
 # ON
-_e.on _e.val("foo/bar"), (val) -> console.log "foo/bar -> #{val}"
+_e.on _e.val("foo/bar"), (val) -> console.log "foo/bar -> #{val}"     # --> DONE!
                                                      # _e.val(..) changed trigger
 
 
@@ -49,10 +76,16 @@ _e.connect ["a/b/c", "d/e/f"], "foo/bar"             # call "foo/bar" after "a/b
 
 
 
+# 4) sexy API
+# ---------------------
 
+_e "foo/bar"                          # --> _e.emit "foo/bar"
+#_e "foo/bar", -> console.log @name    # --> _e.on "foo/bar", -> console.log @name
 
-
-
+bar = _e.val "foo/bar"                #                                 DONE!
+bar()                                 # --> bar.get()                   DONE!
+bar (x) -> console.log "bar=", x      # --> bar.get (x) -> cons....     DONE!
+bar(23)                               # --> bar.set(23)                 DONE!
 
 
 
