@@ -3,7 +3,7 @@ _e = require "./../custom_event"
 
 #_e.options.trace = yes
 
-describe "_e.on", ->
+describe "_e.on(<topic>)", ->
 
     it "should return an EventListener", ->
 

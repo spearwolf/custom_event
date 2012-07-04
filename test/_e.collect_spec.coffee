@@ -1,7 +1,7 @@
 should = require 'should'
 _e = require "./../custom_event"
 
-describe "_e.collect", ->
+describe "_e.collect(<topic>, <function>)", ->
 
     it "should collect all results from a topic", ->
 

@@ -58,10 +58,10 @@ _e.set "foo/bar", 23        # DONE!
 
 # CONNECT
 _e.connect "a/b/c", "d/e/f", _e.val("foo/bar")       # calling _e.val(..).set     --> DONE!
-_e.connect _e.val("foo/bar"), "foo/bar/updated"      # _e.val(..) changed trigger
+_e.connect _e.val("foo/bar"), "foo/bar/updated"      # _e.val(..) changed trigger --> DONE!
 
 # ON
-_e.on _e.val("foo/bar"), (val) -> console.log "foo/bar -> #{val}"     # --> DONE!
+_e.on _e.val("foo/bar"), (val) -> console.log "foo/bar -> #{val}"               # --> DONE!
                                                      # _e.val(..) changed trigger
 
 
