@@ -10,7 +10,7 @@ bundle.on "mod/foo/bar", (bar) -> console.log bar
 
 
 # or
-_e.bundle "mod/foo" (bundle) ->
+_e.bundle "mod/foo", (bundle) ->
     bundle.on "bar", (bar) -> console.log bar
 
 # bundle.bar(12)
@@ -88,9 +88,8 @@ bar (x) -> console.log "bar=", x      # --> bar.get (x) -> cons....     DONE!
 bar(23)                               # --> bar.set(23)                 DONE!
 
 
-
-
-
+# 5) jquery, $ integration
+_e.connect "[data-behavior~=foo]|click", "foo/bar"
 
 
 
@@ -105,6 +104,13 @@ bar(23)                               # --> bar.set(23)                 DONE!
 #========================
 #THINKTANK
 #========================
+
+_e.view -> (view)
+
+     view.dom_events
+        "$[data-behavior~=foo]|click": "foo/bar"
+
+
 
 
 bar = _e.val 'foo/bar'

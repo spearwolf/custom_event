@@ -3,25 +3,31 @@ _e = require "./../custom_event"
 
 #_e.options.trace = yes
 
-describe "_e.on(<topic>)", ->
+describe "_e.on(<topic>, <function>)", ->
 
-    it "should return an EventListener", ->
+    describe "should return EventListener", ->
 
-        TOPIC = "hyperion/aphrodite"
+        describe "EventListener API", ->
 
-        a = _e.on TOPIC, -> true
+            TOPIC = "hyperion/aphrodite"
 
-        #console.log "EventListener -->", a
+            a = _e.on TOPIC, -> true
+            #console.log "EventListener -->", a
 
-        should.exist a
-        a.should.be.a "object"
-        a.eType.should.equal "EventListener"
-        a.id.should.be.a "number"
-        a.name.should.equal TOPIC
-        a.destroy.should.be.a "function"
+            it "should be an object", ->
+                should.exist a
+                a.should.be.a "object"
+
+            it "eType", -> a.eType.should.equal "EventListener"
+            it "id", -> a.id.should.be.a "number"
+            it "name", -> a.name.should.equal TOPIC
+
+            it "emit()", -> a.emit.should.be.a "function"
+            it "pause()", -> a.pause.should.be.a "function"
+            it "destroy()", -> a.destroy.should.be.a "function"
 
 
-    it "should execute the callback after emit()", ->
+    it "should invoke function after _e.emit(<topic>)", ->
 
         TOPIC = "hyperion/aphrodite"
         OTHER_TOPIC = "kronos/zeus"
@@ -43,83 +49,68 @@ describe "_e.on(<topic>)", ->
         resB.should.equal 9
 
 
-    it "should return an EventListener with pause() function", ->
+    describe "pause()", ->
 
-        TOPIC = "hyperion/aphrodite"
+        it "paused subscriptions should not be invoked", ->
 
-        resA = null
+            TOPIC = "hyperion/aphrodite"
 
-        a = _e.on TOPIC, (val) -> resA = val
+            resA = null
 
-        a.pause.should.be.a "function"
-        should.not.exist resA
-        a.pause().should.be.false
+            a = _e.on TOPIC, (val) -> resA = val
 
-        _e.emit TOPIC, 1
+            a.pause.should.be.a "function"
+            should.not.exist resA
+            a.pause().should.be.false
 
-        resA.should.equal 1
-        a.pause().should.be.false
+            _e.emit TOPIC, 1
 
-        a.pause on
+            resA.should.equal 1
+            a.pause().should.be.false
 
-        _e.emit TOPIC, 2
+            a.pause on
 
-        resA.should.equal 1
-        a.pause().should.be.true
+            _e.emit TOPIC, 2
 
-        a.pause off
+            resA.should.equal 1
+            a.pause().should.be.true
 
-        _e.emit TOPIC, 3
+            a.pause off
 
-        resA.should.equal 3
-        a.pause().should.be.false
+            _e.emit TOPIC, 3
 
-
-    it "should return an EventListener with emit() function", ->
-
-        TOPIC = "hyperion/aphrodite"
-
-        resA = null
-
-        a = _e.on TOPIC, (val) -> resA = val
-
-        a.emit.should.be.a "function"
-        should.not.exist resA
-
-        _e.emit TOPIC, 1
-
-        resA.should.equal 1
-
-        a.emit 2
-
-        resA.should.equal 2
+            resA.should.equal 3
+            a.pause().should.be.false
 
 
-    it "should return an EventListener with destroy() function", ->
+    describe "destroy()", ->
 
-        TOPIC = "hyperion/aphrodite"
+        it "should remove topic subscription", ->
 
-        resA = null
+            TOPIC = "hyperion/aphrodite"
 
-        a = _e.on TOPIC, (val) -> resA = val
+            resA = null
 
-        a.destroy.should.be.a "function"
-        should.not.exist resA
+            a = _e.on TOPIC, (val) -> resA = val
 
-        _e.emit TOPIC, 1
+            a.destroy.should.be.a "function"
+            should.not.exist resA
 
-        resA.should.equal 1
+            _e.emit TOPIC, 1
 
-        a.destroy()
+            resA.should.equal 1
 
-        should.not.exist a.eType
-        should.not.exist a.id
-        should.not.exist a.name
-        should.not.exist a.destroy
-        should.not.exist a.emit
-        should.not.exist a.pause
+            a.destroy()
 
-        _e.emit TOPIC, 2
+            should.not.exist a.eType
+            should.not.exist a.id
+            should.not.exist a.name
+            should.not.exist a.destroy
+            should.not.exist a.emit
+            should.not.exist a.pause
 
-        resA.should.equal 1
+            _e.emit TOPIC, 2
+
+            resA.should.equal 1
+
 

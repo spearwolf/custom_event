@@ -20,6 +20,7 @@ task :build do
   end
 end
 
+# XXX obsolete
 #begin
   #require 'jasmine'
   #load 'jasmine/tasks/jasmine.rake'

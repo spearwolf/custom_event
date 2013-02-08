@@ -2,7 +2,7 @@
 // ===============
 //
 // Created at 2010/05/07
-// Copyright (c) 2010-2012 Wolfger Schramm <wolfger@spearwolf.de>
+// Copyright (c) 2010-2013 Wolfger Schramm <wolfger@spearwolf.de>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -134,13 +134,15 @@
     })();
 
 
-    var ETYPE_EVENT_NODE = "EventNode",
-        ETYPE_CALLBACK = "eCallback",
-        ETYPE_VALUE_OBJECT = "ValueObject",
-        ETYPE_VALUE_FUNCTION = "ValueFunction",
-        ETYPE_VALUE_CHANGE_LISTENER = "ValueChangeListener",
-        ETYPE_EVENT_LISTENER = "EventListener",
-        ETYPE_IDLE_EVENT_LISTENER = "IdleEventListener";
+    var EType = {
+        EventNode: "EventNode",
+        Callback: "eCallback",
+        ValueObject: "ValueObject",
+        ValueFunction: "ValueFunction",
+        ValueChangeListener: "ValueChangeListener",
+        EventListener: "EventListener",
+        IdleEventListener: "IdleEventListener"
+    };
 
     var nextCallbackId = 1,
         callbackRefs = {};
@@ -152,7 +154,7 @@
                 eType: eType,
                 node: node
             };
-        if (eType === ETYPE_VALUE_CHANGE_LISTENER) {
+        if (eType === EType.ValueChangeListener) {
             ref.callback = options.callback;
         }
         callbackRefs[id] = ref;
@@ -163,7 +165,7 @@
     // -------------------
 
     function EventNode(name, parentNode) {
-        this.eType = ETYPE_EVENT_NODE;  // ETYPE
+        this.eType = EType.EventNode;  // EType
         this.name = name;
         this.parentNode = parentNode;
         this.children = [];
@@ -256,8 +258,9 @@
     EventNode.prototype.findOrCreateNode = function (path, findGreedy) {
         var split_path = this.splitPath(path),
             name = split_path[0],
-            rest = split_path[1],
-            findGreedy = typeof findGreedy === 'undefined' ? true : findGreedy;
+            rest = split_path[1];
+
+        findGreedy = typeof findGreedy === 'undefined' ? true : findGreedy;
 
         var findChild = (function (self) {
             return function (childName) {
@@ -293,8 +296,8 @@
     };
 
     EventNode.prototype.addCallback = function (callback, options) {
-        var callback = {
-            eType: ETYPE_CALLBACK,  // ETYPE
+        var _callback = {
+            eType: EType.Callback,  // EType
             id: nextCallbackId++,
             name: options.name,
             fn: callback,
@@ -302,8 +305,8 @@
             binding: options.binding,
             paused: false
         };
-        this.callbacks.push(callback);
-        return callback;
+        this.callbacks.push(_callback);
+        return _callback;
     };
 
     EventNode.prototype.destroyCallbacks = function (ids) {
@@ -325,6 +328,33 @@
         return count;
     };
 
+    // *utility functions*
+    // -------------------
+
+    function _reject(arr, val) {
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (arr[i] === val) {
+                arr.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    function _destruct(obj, options) {
+        var opts = options || {},
+            except = opts.except || [],
+            attr;
+        if (!(except instanceof Array)) {
+            except = [except];
+        }
+        for (attr in obj) {
+            if (obj.hasOwnProperty(attr) && except.indexOf(attr) === -1) {
+                delete obj[attr];
+            }
+        }
+    }
+
     // *internal* api
     // --------------
 
@@ -334,7 +364,7 @@
         if (typeof node.eValueObject === 'undefined') {
 
             node.eValueObject = {
-                eType: ETYPE_VALUE_OBJECT,
+                eType: EType.ValueObject,
                 name: topic,
 
                 data: undefined,
@@ -354,7 +384,7 @@
                     }
                 };
 
-                fn.eType = ETYPE_VALUE_FUNCTION;
+                fn.eType = EType.ValueFunction;
                 fn.eValueObject = valObj;
 
                 fn.set = function(newValue) {
@@ -377,8 +407,8 @@
                     for (i = 0; i < valObj.listener.length; i++) {
                         try {
                             valObj.listener[i](valObj.data);
-                        } catch (e) {
-                            log.error("e_val('"+valObj.name+"') on[change] listener error", e);
+                        } catch (e_) {
+                            log.error("e_val('"+valObj.name+"') on[change] listener error", e_);
                         }
                     }
                     return valObj.data;
@@ -387,21 +417,16 @@
                 fn.on = function(callback) {
                     valObj.listener.push(callback);
                     var id = createCallbackId(valObj.name,
-                                                ETYPE_VALUE_CHANGE_LISTENER,
+                                                EType.ValueChangeListener,
                                                 node,
                                                 { callback: callback });
                     return {
-                        eType: ETYPE_VALUE_CHANGE_LISTENER,  // ETYPE
+                        eType: EType.ValueChangeListener,  // EType
                         id: id,
                         name: valObj.name,
                         destroy: function() {
                             _e.destroy(id);
-                            delete this.eType;
-                            delete this.id;
-                            delete this.name;
-                            delete this.destroy;
-                            //delete this.emit;
-                            //delete this.pause;
+                            _destruct(this);
                         }
                         //emit: function() { _e.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
                         //pause: function(pause) {
@@ -448,27 +473,23 @@
             listener = rootNode.findOrCreateNode(topic).addCallback(callback, opts);
 
             return {
-                eType: ETYPE_EVENT_LISTENER,  // ETYPE
+                eType: EType.EventListener,  // EType
                 id: listener.id,
                 name: listener.name,
                 destroy: function() {
                     _e.destroy(listener.id);
-                    delete this.eType;
-                    delete this.id;
-                    delete this.name;
-                    delete this.destroy;
-                    delete this.emit;
-                    delete this.pause;
+                    _destruct(this);
                 },
                 emit: function() { _e.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
                 pause: function(pause) {
                     if (typeof pause === 'boolean') {
-                        return listener.paused = pause;
+                        listener.paused = pause;
+                        return pause;
                     }
                     return listener.paused;
                 }
             };
-        } else if (typeof topic === 'function' && topic.eType === ETYPE_VALUE_FUNCTION) {
+        } else if (typeof topic === 'function' && topic.eType === EType.ValueFunction) {
             //opts.name = topic.eValueObject.name;
             //listener = topic;
             return topic.on(callback);
@@ -476,7 +497,7 @@
 
             // TODO move to valObj.fn.on
             //return {
-                //eType: ETYPE_VALUE_CHANGE_LISTENER,  // ETYPE
+                //eType: EType.ValueChangeListener,  // EType
                 //id: listener.id,
                 //name: topic.eValueObject.name
                 //destroy: function() {
@@ -524,7 +545,7 @@
         }
 
         var api = {
-            eType: ETYPE_IDLE_EVENT_LISTENER,  // ETYPE
+            eType: EType.IdleEventListener,  // EType
 
             destroy: function() {
                 clearTimer();
@@ -653,7 +674,7 @@
                         context.destroy = destroy(callback.id);
 
                         if (typeof context.eType === 'undefined') {
-                            context.eType = ETYPE_EVENT_LISTENER;  // ???
+                            context.eType = EType.EventListener;  // ???
                         }
 
                         // don't overwrite _e.Module's pause()
@@ -701,26 +722,16 @@
         log.traceGroupEnd();
     }
 
-    function _reject(arr, val) {
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            if (arr[i] === val) {
-                arr.splice(i, 1);
-                break;
-            }
-        }
-    }
-
     function destroy(pathOrId, node) {
         // TODO make it faster - use an internal id -> node reference hash
         var ref;
         node = node || rootNode;
 
         if (typeof pathOrId === 'number') {
-            if (ref = callbackRefs[pathOrId]) {
-                if (ref.eType === ETYPE_VALUE_CHANGE_LISTENER) {
-                    _reject(ref.node.eValueFunction.listener, ref.callback);
-                    log.debug("destroy -->", ref);
+            ref = callbackRefs[pathOrId];
+            if (ref) {
+                if (ref.eType === EType.ValueChangeListener) {
+                    _reject(ref.node.eValueObject.listener, ref.callback);
                     return true;
                 }
                 delete callbackRefs[pathOrId];
@@ -758,7 +769,7 @@
             for (var j = 0; j < listener.length; ++j) {
                 if (typeof listener[j] === 'string') {
                     _e.emit.apply(root, [listener[j]].concat(args));
-                } else if (typeof listener[j] === 'function' && listener[j].eType === ETYPE_VALUE_FUNCTION) {
+                } else if (typeof listener[j] === 'function' && listener[j].eType === EType.ValueFunction) {
                     listener[j](args[0]);
                 }
             }
@@ -825,7 +836,7 @@
             return paused;
         };
 
-        module.eType = "eModule";  // ETYPE
+        module.eType = "eModule";  // EType
 
         return module;
     }

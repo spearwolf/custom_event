@@ -7,22 +7,23 @@ describe "_e.val(<topic>)", ->
 
     a = _e.val "c/b/a"
 
-    it "should return a function ..", ->
+    it "should create eValue", ->
 
         should.exist a
         a.should.be.a "function"
 
-    it ".. which return 'ValueFunction' as eType", -> a.eType.should.equal "ValueFunction"
-    it ".. which has a .get() function", -> a.get.should.be.a "function"
-    it ".. which has a .set() function", -> a.set.should.be.a "function"
-    it ".. which has a .on() function", -> a.on.should.be.a "function"
-    it ".. which has a .isEqual() function", -> a.isEqual.should.be.a "function"
-    it ".. which has a .isDefined() function", -> a.isDefined.should.be.a "function"
+    describe "API", ->
+        it "eType", -> a.eType.should.equal "ValueFunction"
+        it "get() function", -> a.get.should.be.a "function"
+        it "set()", -> a.set.should.be.a "function"
+        it "on()", -> a.on.should.be.a "function"
+        it "isEqual()", -> a.isEqual.should.be.a "function"
+        it "isDefined()", -> a.isDefined.should.be.a "function"
 
 
 describe "_e.val(<topic>).on(<function>)", ->
 
-    it "should immediately call on(change) callbacks when value is updated", ->
+    it "should immediately invoke on-changed-listeners when value is updated", ->
 
         higgs = _e.val "ff/hhh"
 
@@ -50,11 +51,11 @@ describe "_e.val(<topic>).set(<value>)", ->
 
     plah = _e.val "goa/plah"
 
-    it "should update the value", ->
+    it "should update value", ->
         plah.set(33)
         plah().should.be.equal 33
 
-    it "should return the (new) value", ->
+    it "should return the new value", ->
         plah.set(38).should.be.equal 38
 
 
@@ -62,12 +63,14 @@ describe "_e.val(<topic>).get()", ->
 
     plah = _e.val "foo/plah"
 
-    it "should immediately return undefined as value if not initialized", ->
-        should.not.exist plah.get()
+    describe "if not initialized", ->
+        it "should immediately return <undefined>", ->
+            should.not.exist plah.get()
 
-    it "should immediately return the value", ->
-        plah.set(11)
-        plah.get().should.equal 11
+    describe "otherwise", ->
+        it "should immediately return the value", ->
+            plah.set(11)
+            plah.get().should.equal 11
 
 
 describe "_e.val(<topic>).get(<function>)", ->
@@ -128,7 +131,7 @@ describe "_e.val(<topic>)(<function>)", ->
 
     plah = _e.val "akjsyfg2u.abc/plah"
 
-    it "should set value and *NOT* be a shortcut for _e.val(<topic>).get(<callback>)", ->
+    it "should update value and __not__ be a shortcut for _e.val(<topic>).get(<callback>)", ->
 
         should.not.exist plah()
 

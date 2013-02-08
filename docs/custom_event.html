@@ -1,7 +1,7 @@
 <!DOCTYPE html>  <html> <head>   <title>custom_event.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               custom_event.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <h1>custom_event.js</h1>
 
 <p>Created at 2010/05/07
-Copyright (c) 2010-2012 Wolfger Schramm <a href="&#109;&#x61;&#105;&#x6C;&#x74;&#111;:&#x77;&#x6F;&#x6C;&#x66;&#103;&#101;&#x72;&#x40;s&#112;&#101;&#97;&#x72;&#x77;o&#108;&#x66;&#46;d&#101;">&#x77;&#x6F;&#x6C;&#x66;&#103;&#101;&#x72;&#x40;s&#112;&#101;&#97;&#x72;&#x77;o&#108;&#x66;&#46;d&#101;</a></p>
+Copyright (c) 2010-2012 Wolfger Schramm <a href="&#x6D;&#97;i&#108;&#x74;&#x6F;:&#119;o&#x6C;f&#x67;&#x65;&#x72;&#64;s&#112;&#x65;&#x61;&#114;&#119;&#111;&#x6C;&#102;&#x2E;&#x64;&#x65;">&#119;o&#x6C;f&#x67;&#x65;&#x72;&#64;s&#112;&#x65;&#x61;&#114;&#119;&#111;&#x6C;&#102;&#x2E;&#x64;&#x65;</a></p>
 
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -113,13 +113,15 @@ If we're not in CommonJS, add <code>_e</code> to the global object.</p>         
     <span class="p">})();</span>
 
 
-    <span class="kd">var</span> <span class="nx">ETYPE_EVENT_NODE</span> <span class="o">=</span> <span class="s2">&quot;EventNode&quot;</span><span class="p">,</span>
-        <span class="nx">ETYPE_CALLBACK</span> <span class="o">=</span> <span class="s2">&quot;eCallback&quot;</span><span class="p">,</span>
-        <span class="nx">ETYPE_VALUE_OBJECT</span> <span class="o">=</span> <span class="s2">&quot;ValueObject&quot;</span><span class="p">,</span>
-        <span class="nx">ETYPE_VALUE_FUNCTION</span> <span class="o">=</span> <span class="s2">&quot;ValueFunction&quot;</span><span class="p">,</span>
-        <span class="nx">ETYPE_VALUE_CHANGE_LISTENER</span> <span class="o">=</span> <span class="s2">&quot;ValueChangeListener&quot;</span><span class="p">,</span>
-        <span class="nx">ETYPE_EVENT_LISTENER</span> <span class="o">=</span> <span class="s2">&quot;EventListener&quot;</span><span class="p">,</span>
-        <span class="nx">ETYPE_IDLE_EVENT_LISTENER</span> <span class="o">=</span> <span class="s2">&quot;IdleEventListener&quot;</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">EType</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">EventNode</span><span class="o">:</span> <span class="s2">&quot;EventNode&quot;</span><span class="p">,</span>
+        <span class="nx">Callback</span><span class="o">:</span> <span class="s2">&quot;eCallback&quot;</span><span class="p">,</span>
+        <span class="nx">ValueObject</span><span class="o">:</span> <span class="s2">&quot;ValueObject&quot;</span><span class="p">,</span>
+        <span class="nx">ValueFunction</span><span class="o">:</span> <span class="s2">&quot;ValueFunction&quot;</span><span class="p">,</span>
+        <span class="nx">ValueChangeListener</span><span class="o">:</span> <span class="s2">&quot;ValueChangeListener&quot;</span><span class="p">,</span>
+        <span class="nx">EventListener</span><span class="o">:</span> <span class="s2">&quot;EventListener&quot;</span><span class="p">,</span>
+        <span class="nx">IdleEventListener</span><span class="o">:</span> <span class="s2">&quot;IdleEventListener&quot;</span>
+    <span class="p">};</span>
 
     <span class="kd">var</span> <span class="nx">nextCallbackId</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="nx">callbackRefs</span> <span class="o">=</span> <span class="p">{};</span>
@@ -131,13 +133,13 @@ If we're not in CommonJS, add <code>_e</code> to the global object.</p>         
                 <span class="nx">eType</span><span class="o">:</span> <span class="nx">eType</span><span class="p">,</span>
                 <span class="nx">node</span><span class="o">:</span> <span class="nx">node</span>
             <span class="p">};</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nx">eType</span> <span class="o">===</span> <span class="nx">ETYPE_VALUE_CHANGE_LISTENER</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">eType</span> <span class="o">===</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">ValueChangeListener</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">ref</span><span class="p">.</span><span class="nx">callback</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">callback</span><span class="p">;</span>
         <span class="p">}</span>
         <span class="nx">callbackRefs</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">;</span>
         <span class="k">return</span> <span class="nx">id</span><span class="p">;</span>
     <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <h2>EventNode prototype</h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">EventNode</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">parentNode</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="nx">ETYPE_EVENT_NODE</span><span class="p">;</span>  <span class="c1">// ETYPE</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">EventNode</span><span class="p">;</span>  <span class="c1">// EType</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">;</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">parentNode</span> <span class="o">=</span> <span class="nx">parentNode</span><span class="p">;</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">children</span> <span class="o">=</span> <span class="p">[];</span>
@@ -266,7 +268,7 @@ this.eValueFunction</p>             </td>             <td class="code">         
 
     <span class="nx">EventNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">addCallback</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
         <span class="kd">var</span> <span class="nx">callback</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="nx">eType</span><span class="o">:</span> <span class="nx">ETYPE_CALLBACK</span><span class="p">,</span>  <span class="c1">// ETYPE</span>
+            <span class="nx">eType</span><span class="o">:</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">Callback</span><span class="p">,</span>  <span class="c1">// EType</span>
             <span class="nx">id</span><span class="o">:</span> <span class="nx">nextCallbackId</span><span class="o">++</span><span class="p">,</span>
             <span class="nx">name</span><span class="o">:</span> <span class="nx">options</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
             <span class="nx">fn</span><span class="o">:</span> <span class="nx">callback</span><span class="p">,</span>
@@ -295,13 +297,35 @@ this.eValueFunction</p>             </td>             <td class="code">         
         <span class="p">}</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">callbacks</span> <span class="o">=</span> <span class="nx">updated_callbacks</span><span class="p">;</span>
         <span class="k">return</span> <span class="nx">count</span><span class="p">;</span>
-    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <h2><em>internal</em> api</h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">findValueObject</span><span class="p">(</span><span class="nx">topic</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <h2><em>utility functions</em></h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">_reject</span><span class="p">(</span><span class="nx">arr</span><span class="p">,</span> <span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">i</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">arr</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">===</span> <span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">arr</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">_destruct</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">opts</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{},</span>
+            <span class="nx">except</span> <span class="o">=</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">except</span> <span class="o">||</span> <span class="p">[],</span>
+            <span class="nx">attr</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nx">except</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">except</span> <span class="o">=</span> <span class="p">[</span><span class="nx">except</span><span class="p">];</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nx">attr</span> <span class="k">in</span> <span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">obj</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">attr</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">except</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">attr</span><span class="p">)</span> <span class="o">===</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">delete</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">attr</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <h2><em>internal</em> api</h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">findValueObject</span><span class="p">(</span><span class="nx">topic</span><span class="p">)</span> <span class="p">{</span>
         <span class="kd">var</span> <span class="nx">node</span> <span class="o">=</span> <span class="nx">rootNode</span><span class="p">.</span><span class="nx">findOrCreateNode</span><span class="p">(</span><span class="nx">topic</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">node</span><span class="p">.</span><span class="nx">eValueObject</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
 
             <span class="nx">node</span><span class="p">.</span><span class="nx">eValueObject</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="nx">eType</span><span class="o">:</span> <span class="nx">ETYPE_VALUE_OBJECT</span><span class="p">,</span>
+                <span class="nx">eType</span><span class="o">:</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">ValueObject</span><span class="p">,</span>
                 <span class="nx">name</span><span class="o">:</span> <span class="nx">topic</span><span class="p">,</span>
 
                 <span class="nx">data</span><span class="o">:</span> <span class="kc">undefined</span><span class="p">,</span>
@@ -321,14 +345,14 @@ this.eValueFunction</p>             </td>             <td class="code">         
                     <span class="p">}</span>
                 <span class="p">};</span>
 
-                <span class="nx">fn</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="nx">ETYPE_VALUE_FUNCTION</span><span class="p">;</span>
+                <span class="nx">fn</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">ValueFunction</span><span class="p">;</span>
                 <span class="nx">fn</span><span class="p">.</span><span class="nx">eValueObject</span> <span class="o">=</span> <span class="nx">valObj</span><span class="p">;</span>
 
                 <span class="nx">fn</span><span class="p">.</span><span class="nx">set</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">newValue</span><span class="p">)</span> <span class="p">{</span>
                     <span class="kd">var</span> <span class="nx">i</span><span class="p">;</span>
                     <span class="nx">valObj</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">newValue</span><span class="p">;</span>
 
-                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">valObj</span><span class="p">.</span><span class="nx">initialized</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>inform all early-bird getter</p>             </td>             <td class="code">               <div class="highlight"><pre>                        <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">valObj</span><span class="p">.</span><span class="nx">getterQueue</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">valObj</span><span class="p">.</span><span class="nx">initialized</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>inform all early-bird getter</p>             </td>             <td class="code">               <div class="highlight"><pre>                        <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">valObj</span><span class="p">.</span><span class="nx">getterQueue</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
                             <span class="k">try</span> <span class="p">{</span>
                                 <span class="nx">valObj</span><span class="p">.</span><span class="nx">getterQueue</span><span class="p">[</span><span class="nx">i</span><span class="p">](</span><span class="nx">valObj</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
                             <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
@@ -337,7 +361,7 @@ this.eValueFunction</p>             </td>             <td class="code">         
                         <span class="p">}</span>
                         <span class="k">delete</span> <span class="nx">valObj</span><span class="p">.</span><span class="nx">getterQueue</span><span class="p">;</span>
                         <span class="nx">valObj</span><span class="p">.</span><span class="nx">initialized</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-                    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>inform all subscriber</p>             </td>             <td class="code">               <div class="highlight"><pre>                    <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">valObj</span><span class="p">.</span><span class="nx">listener</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>inform all subscriber</p>             </td>             <td class="code">               <div class="highlight"><pre>                    <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">valObj</span><span class="p">.</span><span class="nx">listener</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
                         <span class="k">try</span> <span class="p">{</span>
                             <span class="nx">valObj</span><span class="p">.</span><span class="nx">listener</span><span class="p">[</span><span class="nx">i</span><span class="p">](</span><span class="nx">valObj</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
                         <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
@@ -350,20 +374,17 @@ this.eValueFunction</p>             </td>             <td class="code">         
                 <span class="nx">fn</span><span class="p">.</span><span class="nx">on</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
                     <span class="nx">valObj</span><span class="p">.</span><span class="nx">listener</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
                     <span class="kd">var</span> <span class="nx">id</span> <span class="o">=</span> <span class="nx">createCallbackId</span><span class="p">(</span><span class="nx">valObj</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
-                                                <span class="nx">ETYPE_VALUE_CHANGE_LISTENER</span><span class="p">,</span>
+                                                <span class="nx">EType</span><span class="p">.</span><span class="nx">ValueChangeListener</span><span class="p">,</span>
                                                 <span class="nx">node</span><span class="p">,</span>
                                                 <span class="p">{</span> <span class="nx">callback</span><span class="o">:</span> <span class="nx">callback</span> <span class="p">});</span>
                     <span class="k">return</span> <span class="p">{</span>
-                        <span class="nx">eType</span><span class="o">:</span> <span class="nx">ETYPE_VALUE_CHANGE_LISTENER</span><span class="p">,</span>  <span class="c1">// ETYPE</span>
+                        <span class="nx">eType</span><span class="o">:</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">ValueChangeListener</span><span class="p">,</span>  <span class="c1">// EType</span>
                         <span class="nx">id</span><span class="o">:</span> <span class="nx">id</span><span class="p">,</span>
                         <span class="nx">name</span><span class="o">:</span> <span class="nx">valObj</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
                         <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
                             <span class="nx">_e</span><span class="p">.</span><span class="nx">destroy</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
-                            <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">eType</span><span class="p">;</span>
-                            <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
-                            <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
-                            <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">destroy</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>delete this.emit;
-delete this.pause;</p>             </td>             <td class="code">               <div class="highlight"><pre>                        <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>emit: function() { _e.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
+                            <span class="nx">_destruct</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+                        <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>emit: function() { _e.emit.apply(root, [listener.name].concat(Array.prototype.slice.call(arguments))); },
 pause: function(pause) {
 if (typeof pause === 'boolean') {
 return listener.paused = pause;
@@ -403,17 +424,12 @@ TODO destroy</p>             </td>             <td class="code">               <
             <span class="nx">listener</span> <span class="o">=</span> <span class="nx">rootNode</span><span class="p">.</span><span class="nx">findOrCreateNode</span><span class="p">(</span><span class="nx">topic</span><span class="p">).</span><span class="nx">addCallback</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">opts</span><span class="p">);</span>
 
             <span class="k">return</span> <span class="p">{</span>
-                <span class="nx">eType</span><span class="o">:</span> <span class="nx">ETYPE_EVENT_LISTENER</span><span class="p">,</span>  <span class="c1">// ETYPE</span>
+                <span class="nx">eType</span><span class="o">:</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">EventListener</span><span class="p">,</span>  <span class="c1">// EType</span>
                 <span class="nx">id</span><span class="o">:</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
                 <span class="nx">name</span><span class="o">:</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
                 <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
                     <span class="nx">_e</span><span class="p">.</span><span class="nx">destroy</span><span class="p">(</span><span class="nx">listener</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
-                    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">eType</span><span class="p">;</span>
-                    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
-                    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
-                    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">destroy</span><span class="p">;</span>
-                    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">emit</span><span class="p">;</span>
-                    <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">pause</span><span class="p">;</span>
+                    <span class="nx">_destruct</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
                 <span class="p">},</span>
                 <span class="nx">emit</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">_e</span><span class="p">.</span><span class="nx">emit</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="p">[</span><span class="nx">listener</span><span class="p">.</span><span class="nx">name</span><span class="p">].</span><span class="nx">concat</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">)));</span> <span class="p">},</span>
                 <span class="nx">pause</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">pause</span><span class="p">)</span> <span class="p">{</span>
@@ -423,10 +439,10 @@ TODO destroy</p>             </td>             <td class="code">               <
                     <span class="k">return</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">paused</span><span class="p">;</span>
                 <span class="p">}</span>
             <span class="p">};</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">topic</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">topic</span><span class="p">.</span><span class="nx">eType</span> <span class="o">===</span> <span class="nx">ETYPE_VALUE_FUNCTION</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>opts.name = topic.eValueObject.name;
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">topic</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">topic</span><span class="p">.</span><span class="nx">eType</span> <span class="o">===</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">ValueFunction</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>opts.name = topic.eValueObject.name;
 listener = topic;</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="k">return</span> <span class="nx">topic</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>listener.onChange(callback);</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-18">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-18">&#182;</a>               </div>               <p>TODO move to valObj.fn.on
 return {
-eType: ETYPE<em>VALUE</em>CHANGE_LISTENER,  // ETYPE
+eType: EType.ValueChangeListener,  // EType
 id: listener.id,
 name: topic.eValueObject.name
 destroy: function() {
@@ -473,7 +489,7 @@ return listener.paused;
         <span class="p">}</span>
 
         <span class="kd">var</span> <span class="nx">api</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="nx">eType</span><span class="o">:</span> <span class="nx">ETYPE_IDLE_EVENT_LISTENER</span><span class="p">,</span>  <span class="c1">// ETYPE</span>
+            <span class="nx">eType</span><span class="o">:</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">IdleEventListener</span><span class="p">,</span>  <span class="c1">// EType</span>
 
             <span class="nx">destroy</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
                 <span class="nx">clearTimer</span><span class="p">();</span>
@@ -602,7 +618,7 @@ return listener.paused;
                         <span class="nx">context</span><span class="p">.</span><span class="nx">destroy</span> <span class="o">=</span> <span class="nx">destroy</span><span class="p">(</span><span class="nx">callback</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
 
                         <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">context</span><span class="p">.</span><span class="nx">eType</span> <span class="o">===</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
-                            <span class="nx">context</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="nx">ETYPE_EVENT_LISTENER</span><span class="p">;</span>  <span class="c1">// ???</span>
+                            <span class="nx">context</span><span class="p">.</span><span class="nx">eType</span> <span class="o">=</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">EventListener</span><span class="p">;</span>  <span class="c1">// ???</span>
                         <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <p>don't overwrite _e.Module's pause()
 if (typeof context.pause !== 'function') {
 context.pause = pause(callback);
@@ -646,24 +662,13 @@ context.pause = pause(callback);
         <span class="nx">log</span><span class="p">.</span><span class="nx">traceGroupEnd</span><span class="p">();</span>
     <span class="p">}</span>
 
-    <span class="kd">function</span> <span class="nx">_reject</span><span class="p">(</span><span class="nx">arr</span><span class="p">,</span> <span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kd">var</span> <span class="nx">i</span><span class="p">;</span>
-        <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">arr</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">===</span> <span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nx">arr</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
-                <span class="k">break</span><span class="p">;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
     <span class="kd">function</span> <span class="nx">destroy</span><span class="p">(</span><span class="nx">pathOrId</span><span class="p">,</span> <span class="nx">node</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-20">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-20">&#182;</a>               </div>               <p>TODO make it faster - use an internal id -> node reference hash</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="kd">var</span> <span class="nx">ref</span><span class="p">;</span>
         <span class="nx">node</span> <span class="o">=</span> <span class="nx">node</span> <span class="o">||</span> <span class="nx">rootNode</span><span class="p">;</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">pathOrId</span> <span class="o">===</span> <span class="s1">&#39;number&#39;</span><span class="p">)</span> <span class="p">{</span>
             <span class="k">if</span> <span class="p">(</span><span class="nx">ref</span> <span class="o">=</span> <span class="nx">callbackRefs</span><span class="p">[</span><span class="nx">pathOrId</span><span class="p">])</span> <span class="p">{</span>
-                <span class="k">if</span> <span class="p">(</span><span class="nx">ref</span><span class="p">.</span><span class="nx">eType</span> <span class="o">===</span> <span class="nx">ETYPE_VALUE_CHANGE_LISTENER</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="nx">_reject</span><span class="p">(</span><span class="nx">ref</span><span class="p">.</span><span class="nx">node</span><span class="p">.</span><span class="nx">eValueFunction</span><span class="p">.</span><span class="nx">listener</span><span class="p">,</span> <span class="nx">ref</span><span class="p">.</span><span class="nx">callback</span><span class="p">);</span>
-                    <span class="nx">log</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="s2">&quot;destroy --&gt;&quot;</span><span class="p">,</span> <span class="nx">ref</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">ref</span><span class="p">.</span><span class="nx">eType</span> <span class="o">===</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">ValueChangeListener</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">_reject</span><span class="p">(</span><span class="nx">ref</span><span class="p">.</span><span class="nx">node</span><span class="p">.</span><span class="nx">eValueObject</span><span class="p">.</span><span class="nx">listener</span><span class="p">,</span> <span class="nx">ref</span><span class="p">.</span><span class="nx">callback</span><span class="p">);</span>
                     <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
                 <span class="p">}</span>
                 <span class="k">delete</span> <span class="nx">callbackRefs</span><span class="p">[</span><span class="nx">pathOrId</span><span class="p">];</span>
@@ -701,7 +706,7 @@ context.pause = pause(callback);
             <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">listener</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="o">++</span><span class="nx">j</span><span class="p">)</span> <span class="p">{</span>
                 <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">listener</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
                     <span class="nx">_e</span><span class="p">.</span><span class="nx">emit</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="p">[</span><span class="nx">listener</span><span class="p">[</span><span class="nx">j</span><span class="p">]].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">args</span><span class="p">));</span>
-                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">listener</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">listener</span><span class="p">[</span><span class="nx">j</span><span class="p">].</span><span class="nx">eType</span> <span class="o">===</span> <span class="nx">ETYPE_VALUE_FUNCTION</span><span class="p">)</span> <span class="p">{</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">listener</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">listener</span><span class="p">[</span><span class="nx">j</span><span class="p">].</span><span class="nx">eType</span> <span class="o">===</span> <span class="nx">EType</span><span class="p">.</span><span class="nx">ValueFunction</span><span class="p">)</span> <span class="p">{</span>
                     <span class="nx">listener</span><span class="p">[</span><span class="nx">j</span><span class="p">](</span><span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
                 <span class="p">}</span>
             <span class="p">}</span>
@@ -768,7 +773,7 @@ context.pause = pause(callback);
 <span class="cm">            return paused;</span>
 <span class="cm">        };</span>
 
-<span class="cm">        module.eType = &quot;eModule&quot;;  // ETYPE</span>
+<span class="cm">        module.eType = &quot;eModule&quot;;  // EType</span>
 
 <span class="cm">        return module;</span>
 <span class="cm">    }</span>

@@ -3,18 +3,19 @@ _e = require "./../custom_event"
 
 describe "_e", ->
 
-    it "should exist and define a VERSION attribute", ->
+    it "should exist and define the VERSION", ->
         should.exist _e
         should.exist _e.VERSION
 
-    it "should define a .on() function", -> _e.on.should.be.a "function"
-    it "should define a .idle() function", -> _e.idle.should.be.a "function"
-    it "should define a .once() function", -> _e.once.should.be.a "function"
-    it "should define a .emit() function", -> _e.emit.should.be.a "function"
-    it "should define a .collect() function", -> _e.collect.should.be.a "function"
-    it "should define a .connect() function", -> _e.connect.should.be.a "function"
-    it "should define a .destroy() function", -> _e.destroy.should.be.a "function"
-    it "should define a .val() function", -> _e.val.should.be.a "function"
-    it "should define a .get() function", -> _e.get.should.be.a "function"
-    it "should define a .set() function", -> _e.set.should.be.a "function"
+    describe "API", ->
+        it "on()", -> _e.on.should.be.a "function"
+        it "idle()", -> _e.idle.should.be.a "function"
+        it "once()", -> _e.once.should.be.a "function"
+        it "emit()", -> _e.emit.should.be.a "function"
+        it "collect()", -> _e.collect.should.be.a "function"
+        it "connect()", -> _e.connect.should.be.a "function"
+        it "destroy()", -> _e.destroy.should.be.a "function"
+        it "val()", -> _e.val.should.be.a "function"
+        it "get()", -> _e.get.should.be.a "function"
+        it "set()", -> _e.set.should.be.a "function"
 
