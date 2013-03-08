@@ -1,4 +1,6 @@
-{exec} = require "child_process"
+{exec, spawn} = require "child_process"
+fs = require "fs"
+
 
 REPORTER = "spec"  # "nyan"
 
@@ -8,46 +10,89 @@ C_BLUE = '\u001b[34m'
 C_BOLD = '\u001b[1m'
 C_RESET = '\u001b[0m'
 
+
 print_section = (title) -> console.log "#{C_BOLD}** #{title} **#{C_RESET}"
 
+_spawn = (cmd, options) ->
+    #console.log "> #{cmd} #{options.join ' '}"
+    spawn cmd, options
 
-_exec = (cmdLine, onFinish) ->
-    console.log "> #{cmdLine}"
-    exec cmdLine, (error, stdout, stderr) ->
-        console.log stdout unless stdout.length is 0
-        if error
-            console.error stderr
-            throw error
-        onFinish() if onFinish
+_exec = (cmd, cmdline) ->
+    options = cmdline.split ' '
+    child = _spawn cmd, options
 
-uglifyjs = (sources, outFile, options...) ->
-    cmdLine = "#{sources.join ' '} #{options.join ' '} -o #{outFile}"
-    return "./node_modules/.bin/uglifyjs #{cmdLine}"
+    child.stdout.on 'data', (data) -> process.stdout.write data
+    child.stderr.on 'data', (data) ->
+        process.stderr.write data unless data.toString('utf8').match /^[^\w]*$/
 
-add_header = (headerFile, outFile, onFinish) ->
-    _exec "cat #{headerFile} > #{outFile}", ->
-        _exec "cat #{outFile}.tmp >> #{outFile}", ->
-            _exec "rm #{outFile}.tmp", onFinish
+    child.on 'exit', (code) ->
+        if code isnt 0
+            throw "#{cmd} exited with code #{code}"
 
 
-task "build-production", "build production library -> 'custom_event-min.js'", ->
-    print_section "build-production"
-    _exec uglifyjs(['src/custom_event.js'], 'custom_event-min.js.tmp'), ->
-        add_header 'src/custom_event-header.js', 'custom_event-min.js'
 
-task "build-development", "build development library -> 'custom_event.js'", ->
-    print_section "build-development"
-    _exec uglifyjs(['src/custom_event.js'], 'custom_event.js.tmp', '--beautify'), ->
-        add_header 'src/custom_event-header.js', 'custom_event.js'
+uglifyjs_and_add_header = (header, sources, target, uglifyOptions= [], thenCallback) ->
+
+    console.log "#{C_BOLD}#{C_BLUE}Building:#{C_RESET} #{target}"
+    console.log "  #{C_BOLD}#{C_BLUE}Header:#{C_RESET} #{header}"
+    console.log " #{C_BOLD}#{C_BLUE}Sources:#{C_RESET} #{sources.join ','}\n"
+
+    headerContent = fs.readFileSync header
+
+    out = fs.createWriteStream target, flags: 'w'
+    out.write headerContent
+
+    uglify = _spawn "./node_modules/.bin/uglifyjs", sources.concat(uglifyOptions)
+
+    uglify.stdout.on 'data', (data) -> out.write data
+
+    uglify.stderr.on 'data', (data) ->
+        process.stderr.write data unless data.toString('utf8').match /^[^\w]*$/
+
+    uglify.on 'exit', (code) ->
+        out.write "\n"
+        out.end()
+
+        if code isnt 0
+            throw "uglifyjs exited with code #{code}"
+        else
+            thenCallback() if typeof thenCallback is 'function'
+
+
+
+build_custom_event = (target, uglifyOptions) ->
+    uglifyjs_and_add_header 'src/custom_event-header.js',
+                                ['src/custom_event.js'],
+                                target,
+                                if typeof uglifyOptions isnt 'function' then uglifyOptions else [],
+                                arguments[arguments.length-1]
+
+
+
+
+task "build-prod", "build production library -> 'custom_event-min.js'", ->
+    print_section "build-prod"
+    build_custom_event 'custom_event-min.js'
+
+task "build-dev", "build development library -> 'custom_event.js'", ->
+    print_section "build-dev"
+    build_custom_event 'custom_event.js', ['--beautify']
 
 task "build", "build all", ->
-    invoke 'build-development'
-    invoke 'build-production'
+    invoke 'build-dev'
+    invoke 'build-prod'
+
+
 
 task "test", "run all tests from test/*", ->
-    invoke 'build-development'
     print_section "test"
-    _exec "NODE_ENV=test ./node_modules/.bin/mocha --compilers coffee:coffee-script --reporter #{REPORTER} --colors"
+    build_custom_event 'custom_event.js', ['--beautify'], ->
+        _exec "./node_modules/.bin/mocha", "--compilers coffee:coffee-script --reporter #{REPORTER} --colors"
+
+task "bench", "run benchmark suite", ->
+    print_section "benchmark"
+    build_custom_event 'custom_event-min.js', -> _exec "node", "benchmark.js"
+
 
 
 
