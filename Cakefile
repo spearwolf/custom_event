@@ -27,7 +27,6 @@ _exec = (cmdLine, onFinish) ->
 
 uglifyjs = (sources, outFile, options...) ->
     cmdLine = "#{sources.join ' '} #{options.join ' '} -o #{outFile}"
-    console.log('cmdLine', cmdLine)
     return "./node_modules/.bin/uglifyjs #{cmdLine}"
 
 add_header = (headerFile, outFile, onFinish) ->
