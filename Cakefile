@@ -2,11 +2,6 @@
 
 REPORTER = "spec"  # "nyan"
 
-#SOURCES_BASE = ['custom_event.js']
-#SOURCES_NODE = ['src/kiwoticum-node.js'].concat SOURCES_BASE
-#SOURCES_WWW = SOURCES_BASE.concat ['src/kiwoticum/ui/svg_renderer.js']
-
-
 C_RED = '\u001b[31m'
 C_YELLOW = '\u001b[33m'
 C_BLUE = '\u001b[34m'
@@ -35,21 +30,22 @@ add_header = (headerFile, outFile, onFinish) ->
             _exec "rm #{outFile}.tmp", onFinish
 
 
-task "build-minified", "build minified library -> 'custom_event-min.js'", ->
-    print_section "build-minified"
-    _exec uglifyjs(['custom_event.js'], 'custom_event-min.js.tmp'), ->
-        add_header 'custom_event-header.js', 'custom_event-min.js'
+task "build-production", "build production library -> 'custom_event-min.js'", ->
+    print_section "build-production"
+    _exec uglifyjs(['src/custom_event.js'], 'custom_event-min.js.tmp'), ->
+        add_header 'src/custom_event-header.js', 'custom_event-min.js'
 
-#task "build-node", "build node library -> 'src/kiwoticum.js'", ->
-    #print_section "build-node"
-    #_exec uglifyjs(SOURCES_NODE, 'src/kiwoticum.js', '-b')
+task "build-development", "build development library -> 'custom_event.js'", ->
+    print_section "build-development"
+    _exec uglifyjs(['src/custom_event.js'], 'custom_event.js.tmp', '--beautify'), ->
+        add_header 'src/custom_event-header.js', 'custom_event.js'
 
 task "build", "build all", ->
-    invoke 'build-minified'
+    invoke 'build-development'
+    invoke 'build-production'
 
 task "test", "run all tests from test/*", ->
-    #invoke 'build-node'
-    invoke 'build-minified'
+    invoke 'build-development'
     print_section "test"
     _exec "NODE_ENV=test ./node_modules/.bin/mocha --compilers coffee:coffee-script --reporter #{REPORTER} --colors"
 
