@@ -54,16 +54,18 @@
   <div id="main">
 
     <div id="introduction">
-      <h1>custom_events.js</h1>
+      <h1>custom_event.js</h1>
       <h2><a name="introduction">Introduction</a></h2>
 
       <p>
-        <em>custom_event</em> is a full-featured, topic-based <a href="http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern" target="_blank">publish-subscribe</a> event framework.<br>
+        <em>custom_event</em> is a synchronous, topic-based <a href="http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern" target="_blank">publish-subscribe</a> event system (micro-framework) for javascript.<br>
+      </p>
+      <p>
         100% pure javascript. no dependencies at all.<br> works in any modern browser and <a href="http://nodejs.org/" target="_blank">node.js</a> environment.
       </p>
 
       <p>
-        let's explain this by an example. <em>subscribing</em> to a topic is easy:
+        let's explain this by an example. <em>subscribe</em> to a topic is easy:
         <pre><code>
     _e.on("my/topic", function(x) { console.log("hello", x); })
         </pre></code>
