@@ -79,16 +79,16 @@ describe "_e.val(<topic>).get(<function>)", ->
 
         bar = _e.val "foo/bar"
 
-        x = undefined
+        x = 2
         y = undefined
 
         bar.get (val) -> x = val
         bar.get (val) -> y = val + 1
 
-        should.not.exist x
+        x.should.be.equal 2
         should.not.exist y
 
-        bar.set(42)
+        bar.set 42
 
         x.should.be.equal 42
         y.should.be.equal 43
