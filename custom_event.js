@@ -138,6 +138,33 @@
         this.paused = false;
     }
     var rootNode = new EventNode();
+    EventNode.prototype.selfDestroy = function() {
+        if (this.parentNode) {
+            var i;
+            for (i = 0; i < this.parentNode.children.length; i++) {
+                if (this === this.parentNode.children[i]) {
+                    this.parentNode.children.splice(i, 1);
+                    break;
+                }
+            }
+            for (i = 0; i < this.parentNode.greedyChildren.length; i++) {
+                if (this === this.parentNode.greedyChildren[i]) {
+                    this.parentNode.greedyChildren.splice(i, 1);
+                    break;
+                }
+            }
+            for (i = 0; i < this.parentNode.insatiableChildren.length; i++) {
+                if (this === this.parentNode.insatiableChildren[i]) {
+                    this.parentNode.insatiableChildren.splice(i, 1);
+                    break;
+                }
+            }
+        } else {
+            this.children = [];
+            this.greedyChildren = [];
+            this.insatiableChildren = [];
+        }
+    };
     EventNode.prototype.isPaused = function() {
         if (this.paused) {
             return true;
@@ -587,10 +614,9 @@
         log.traceGroupEnd();
     }
     function destroy(pathOrId, node) {
-        var ref;
-        node = node || rootNode;
         if (typeof pathOrId === "number") {
-            ref = callbackRefs[pathOrId];
+            node = node || rootNode;
+            var ref = callbackRefs[pathOrId];
             if (ref) {
                 if (ref.eType === EType.ValueChangeListener) {
                     _reject(ref.node.eValueObject.listener, ref.callback);
@@ -619,6 +645,10 @@
                     }
                 }
             }
+        } else if (typeof pathOrId === "string") {
+            node = pathOrId === _e.options.pathSeparator ? rootNode : rootNode.findOrCreateNode(pathOrId);
+            console.log("DESTROY found node:", node);
+            node.selfDestroy();
         }
         return false;
     }
@@ -655,6 +685,9 @@
     };
     _e.connect = connectEventListener;
     _e.destroy = destroy;
+    _e.destroy_all = function() {
+        destroy(_e.options.pathSeparator);
+    };
     _e.val = findValueObject;
     _e.get = function(topic, callback) {
         _e.val(topic).get(callback);
