@@ -18,4 +18,5 @@ describe "_e", ->
         it "val()", -> _e.val.should.be.a "function"
         it "get()", -> _e.get.should.be.a "function"
         it "set()", -> _e.set.should.be.a "function"
+        it "pause()", -> _e.pause.should.be.a "function"
 

@@ -43,7 +43,9 @@
         root._e = _e;
     }
     var log = function() {
-        var has_console = typeof root.console !== "undefined" && typeof Function === "function" && typeof Function.prototype.bind === "function", has_console_group = has_console && typeof root.console.group === "function", logPrefix = "custom_event.js:", log = {}, bindConsole = !has_console ? undefined : function(method) {
+        var has_console = typeof root.console !== "undefined" && typeof Function === "function" && typeof Function.prototype.bind === "function", has_console_group = has_console && typeof root.console.group === "function", logPrefix = "custom_event.js:", log = {
+            node_env: typeof window === "undefined"
+        }, bindConsole = !has_console ? undefined : function(method) {
             return Function.prototype.bind.call(console[method], console);
         }, _error = has_console ? bindConsole("error") : null, _debug = has_console ? bindConsole("log") : null, _trace = has_console ? bindConsole("log") : null, _group = has_console_group ? bindConsole("group") : null, groupPrefix = "";
         if (has_console) {
@@ -133,8 +135,17 @@
         this.greedyChildren = [];
         this.insatiableChildren = [];
         this.callbacks = [];
+        this.paused = false;
     }
     var rootNode = new EventNode();
+    EventNode.prototype.isPaused = function() {
+        if (this.paused) {
+            return true;
+        } else if (this.parentNode) {
+            return this.parentNode.isPaused();
+        }
+        return false;
+    };
     EventNode.prototype.fullPathName = function() {
         return typeof this.name === "undefined" ? _e.options.pathSeparator : this._fullPathName();
     };
@@ -151,6 +162,13 @@
             this.children.push(node);
         }
         return node;
+    };
+    EventNode.prototype.getChild = function(name) {
+        for (var i = 0; i < this.children.length; i++) {
+            if (name === this.children[i].name) {
+                return this.children[i];
+            }
+        }
     };
     EventNode.prototype.splitPath = function(path) {
         var all_names = path.split(_e.options.pathSeparator), name = null;
@@ -169,26 +187,33 @@
         }
         return [ name, rest.length === 0 ? "" : rest.join(_e.options.pathSeparator) ];
     };
-    EventNode.prototype.matchNodes = function(path, fn) {
+    EventNode.prototype.matchNodes = function(path, fn, includePausedNodes) {
         var split_path = this.splitPath(path), name = split_path[0], rest = split_path[1], node = this, i;
+        if (!includePausedNodes && node.isPaused()) {
+            return;
+        }
         for (i = 0; i < node.insatiableChildren.length; i++) {
             fn(node.insatiableChildren[i], path);
         }
         if (rest.length > 0) {
             for (i = 0; i < this.children.length; i++) {
                 node = this.children[i];
-                if (name === _e.options.greedyChar || name === node.name) {
-                    node.matchNodes(rest, fn);
+                if (includePausedNodes || !node.paused) {
+                    if (name === _e.options.greedyChar || name === node.name) {
+                        node.matchNodes(rest, fn, includePausedNodes);
+                    }
                 }
             }
             for (i = 0; i < this.greedyChildren.length; i++) {
-                this.greedyChildren[i].matchNodes(rest, fn);
+                this.greedyChildren[i].matchNodes(rest, fn, includePausedNodes);
             }
         } else {
             for (i = 0; i < this.children.length; i++) {
                 node = this.children[i];
-                if (name === _e.options.greedyChar || name === node.name) {
-                    fn(node);
+                if (includePausedNodes || !node.paused) {
+                    if (name === _e.options.greedyChar || name === node.name) {
+                        fn(node);
+                    }
                 }
             }
             for (i = 0; i < this.greedyChildren.length; i++) {
@@ -237,7 +262,8 @@
             fn: callback,
             once: !!options.once,
             binding: options.binding,
-            paused: false
+            paused: false,
+            eNode: this
         };
         this.callbacks.push(_callback);
         return _callback;
@@ -382,7 +408,16 @@
                         listener.paused = pause;
                         return pause;
                     }
-                    return listener.paused;
+                    return this.is_paused();
+                },
+                is_paused: function() {
+                    if (listener.paused) {
+                        return true;
+                    } else if (listener.eNode) {
+                        return listener.eNode.isPaused();
+                    } else {
+                        return false;
+                    }
                 }
             };
         } else if (typeof topic === "function" && topic.eType === EType.ValueFunction) {
@@ -502,11 +537,16 @@
                     return function() {
                         callback.paused = true;
                     };
-                }, result, context, callback, args_;
+                }, result, context, callback, args_, _paused;
                 for (i = 0; i < node.callbacks.length; i++) {
                     callback = node.callbacks[i];
-                    if (callback.paused) {
-                        log.trace("_e.on -> (paused)", callback.name, "[" + callback.id + "]", callback);
+                    if (callback.eType === EType.EventListener) {
+                        _paused = callback.is_paused();
+                    } else {
+                        _paused = callback.paused;
+                    }
+                    if (_paused) {
+                        log.trace("_e.on -> (paused)", callback.name, "[" + callback.id + "]", log.node_env ? "" : callback);
                         continue;
                     }
                     if (stacktrace.topicPath.indexOf(callback.id) < 0) {
@@ -522,7 +562,7 @@
                             context.pathArgs = restPath.split(_e.options.pathSeparator);
                             args_ = context.pathArgs.concat(args);
                         }
-                        log.trace("_e.on ->", callback.name, "[" + callback.id + "]", callback, "args=", args_);
+                        log.trace("_e.on ->", callback.name, "[" + callback.id + "]", log.node_env ? "" : callback, "args=", args_);
                         result = callback.fn.apply(context, args_);
                         if (callback.once) {
                             destroy_callback_ids.push(callback.id);
@@ -532,7 +572,7 @@
                         }
                         stacktrace.topicPath.pop();
                     } else {
-                        log.error("_e.on -> (skipped/recursion)", callback.name, "[" + callback.id + "]", callback);
+                        log.error("_e.on -> (skipped/recursion)", callback.name, "[" + callback.id + "]", log.node_env ? "" : callback);
                     }
                 }
                 node.destroyCallbacks(destroy_callback_ids);
@@ -595,6 +635,15 @@
             }
         });
     }
+    function pause(topic, shouldPause) {
+        var _shouldPause = typeof shouldPause === "undefined" ? true : !!shouldPause;
+        if (typeof topic === "object" && topic.eType === EType.EventListener) {
+            return topic.pause(_shouldPause);
+        } else if (typeof topic === "string") {
+            var node = rootNode.findOrCreateNode(topic);
+            return node.paused = _shouldPause;
+        }
+    }
     _e.on = registerEventListener;
     _e.idle = registerIdleEventListener;
     _e.once = registerEventListenerOnce;
@@ -613,6 +662,7 @@
     _e.set = function(topic, value) {
         _e.val(topic).set(value);
     };
+    _e.pause = pause;
     _e.options = {
         pathSeparator: "/",
         greedyChar: "*",

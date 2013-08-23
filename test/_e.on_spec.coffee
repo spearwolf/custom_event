@@ -64,23 +64,21 @@ describe "_e.on(<topic>, <function>)", ->
             a.pause().should.be.false
 
             _e.emit TOPIC, 1
-
             resA.should.equal 1
-            a.pause().should.be.false
 
-            a.pause on
-
-            _e.emit TOPIC, 2
-
-            resA.should.equal 1
+            #a.pause on
+            _e.pause a #, on
             a.pause().should.be.true
 
-            a.pause off
+            _e.emit TOPIC, 2
+            resA.should.equal 1
+
+            #a.pause off
+            _e.pause a, off
+            a.pause().should.be.false
 
             _e.emit TOPIC, 3
-
             resA.should.equal 3
-            a.pause().should.be.false
 
 
     describe "destroy()", ->
