@@ -1,0 +1,90 @@
+
+/* ========== LAYOUT ========== */
+
+html, body {
+    margin: 0 0;
+    padding: 0 0;
+    width: 100%;
+    height: 100%;
+}
+
+#sidebar, #main {
+    margin: 0 0;
+    padding: 5px 15px;
+}
+
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 220px;
+    height: 100%;
+    overflow: auto;
+    overflow-x: hidden;
+    border-right: 1px dashed #aaaaaa;
+}
+
+#main {
+    margin-left: 250px;
+}
+
+/* ========== PRE CODE STYLE ========== */
+
+pre > code {
+    line-height: 16px;
+    border-radius: 3px;
+    padding: 0 0.5em;
+    border: 1px solid #c0d0e0;
+}
+
+/* ========== FONTS // COLORS ========== */
+
+body, a {
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    font-height: 16px;
+    line-height: 24px;
+    color: black;
+}
+h1 { font-size: 2em; font-weight: bold; }
+h2 { font-size: 1.5em; font-weight: bold; }
+h3 { 
+    font-size: 16px; 
+    font-weight: bold; 
+    line-height: 24px;
+    margin-bottom: 4px;
+}
+h1,h2,h3 {
+    color: #204060;
+}
+h4 {
+    font-size: 14px;
+    font-family: Monospace;
+    font-weight: normal;
+    color: #333;
+}
+a.function, a.function:visited {
+    background-color: #eaeaea;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 1px 3px;
+    border-radius: 2px;
+}
+a.function:hover {
+    background-color: #303030;
+    color: white;
+    text-decoration: underline;
+}
+dt {
+    font-weight: bold;
+}
+ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 0;
+}
+ul > li {
+    margin-bottom: 2px;
+}
+
+

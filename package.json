@@ -1,0 +1,19 @@
+{
+  "name": "custom_event",
+  "version": "0.7.0-pre",
+  "author": "Wolfger Schramm <wolfger@spearwolf.de>",
+  "engines":{
+    "node": "0.8.19"
+  },
+  "scripts":{
+      "test": "./node_modules/coffee-script/bin/cake test"
+  },
+  "dependencies":{
+    "mocha": "latest",
+    "should": "latest",
+    "sinon": "latest",
+    "coffee-script": "latest",
+    "uglify-js": "latest",
+    "benchmark": "latest"
+  }
+}

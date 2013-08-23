@@ -1,0 +1,11 @@
+
+_e.action(eventPath[, args...])
+ -  '*' works as expected
+ -  BUT '**' doesn't work!
+
+_e.on('../**')
+ -  works
+ -  BUT callback-function-arguments-ordering is different ..
+    _e.on "foo/**"
+    _e.action "foo/bar/plah/xyz", 23 => on -> ("bar", "plah", "xyz", 23)
+
