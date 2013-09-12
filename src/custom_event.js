@@ -356,32 +356,47 @@
             return cur_node;
         }
 
-        function match_node(path) {
+        function match_node(path, isDeepMatch) {
             var path_items = path.pathItems()
               , next_name
               , next_node
               , cur_node = nodeAPI
-              , visited_nodes = [{ node: cur_node, restPath: path }]
+              , visited_nodes
               ;
+            if (isDeepMatch) {
+                visited_nodes = [{ node: cur_node, restPath: path }];
+            }
+
             while (!!(next_name = path_items.shift())) {
                 next_node = cur_node.getChild(next_name);
+
                 if (!next_node) {
                     path_items.splice(0, 0, next_name);
                     break;
                 }
+
                 cur_node = next_node;
-                if (cur_node.listener.length > 0) {
-                    visited_nodes.push({
-                        node: cur_node,
-                        restPath: (path_items.length > 0 ? new NodePath(path_items.join('/')) : undefined)
-                    });
+
+                if (isDeepMatch) {
+                    if (cur_node.listener.length > 0) {
+                        visited_nodes.push({
+                            node: cur_node,
+                            restPath: (path_items.length > 0 ? new NodePath(path_items.join('/')) : undefined)
+                        });
+                    }
                 }
             }
+
             var rest_path;
             if (path_items.length > 0) {
                 rest_path = new NodePath(path_items.join('/'), cur_node);
             }
-            return { node: cur_node, restPath: rest_path, visitedNodes: visited_nodes };
+
+            return {
+                node: cur_node,
+                restPath: rest_path,
+                visitedNodes: visited_nodes
+            };
         }
 
         function make_finder(finderMethod, actionCallback, travelAlwaysFromRoot) {
@@ -392,9 +407,9 @@
                 }
                 if (path.isAbsolute) {
                     if (nodeAPI.isRootNode) {
-                        return actionCallback(path);
+                        return actionCallback(path, travelAlwaysFromRoot);
                     } else {
-                        return nodeAPI.rootNode[finderMethod](path);
+                        return nodeAPI.rootNode[finderMethod](path, travelAlwaysFromRoot);
                     }
                 } else { // path.node is available
                     if (nodeAPI === path.node) {
