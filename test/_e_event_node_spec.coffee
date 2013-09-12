@@ -107,6 +107,10 @@ describe "CustomEventNode API", ->
             should.not.exist e.find '/find2/g/u/z'
             should.not.exist c.find 'g/u/z'
 
+            root = e.find '/'
+            should.exist root
+            root.isRootNode.should.be.true
+
 
     describe "match(path)", ->
 
@@ -134,6 +138,13 @@ describe "CustomEventNode API", ->
             should.exist match
             match.should.have.property 'node'
             match.node.should.have.property 'nodeName', 'c'
+            match.should.have.ownProperty 'restPath'
+            should.not.exist match.restPath
+
+            match = node.match '/'
+            should.exist match
+            match.should.have.property 'node'
+            match.node.isRootNode.should.be.true
             match.should.have.ownProperty 'restPath'
             should.not.exist match.restPath
 

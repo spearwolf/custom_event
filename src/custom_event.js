@@ -205,6 +205,47 @@
     */
 
     // ____________________________________________________________________ }}}
+    // ___ CustomEventListener ____________________________________________ {{{
+
+    var g_nextListenerId = 1
+      , g_allListener = {}
+      ;
+
+    function makeCustomEventListener(node, action) {
+
+        var action_type = typeof action
+
+          , listenerAPI = {
+                id: (g_nextListenerId++),
+                node: node,
+                type: 'CustomEventListener',
+                actionType: action_type,
+                action: action
+            }
+          ;
+
+        if ('function' === action_type) {
+
+            listenerAPI.emit = function() {
+                // TODO
+                action.apply(root, arguments);
+            };
+
+        } else {
+            log.warn('unsupported listener action type:', action_type);
+
+            listenerAPI.emit = function() {
+            };
+        }
+
+
+        node.listener.push(listenerAPI);
+        g_allListener[listenerAPI.id] = listenerAPI;
+
+        return listenerAPI;
+    }
+
+    // ____________________________________________________________________ }}}
     // ___ EventNode ______________________________________________________ {{{
 
     function makeEventNode(name, parentNode) {
@@ -215,10 +256,13 @@
                 nodeName: name,
                 isRootNode: !parentNode,
                 parentNode: parentNode,
-                rootNode: g_rootNode
+                rootNode: g_rootNode,
+
+                listener: []
             }
           ;
 
+        // ___ path _______________________________________________________ {{{
         nodeAPI.path = (function(){
             if (nodeAPI.isRootNode) {
                 return undefined;
@@ -230,7 +274,8 @@
                 return new NodePath(path, nodeAPI);
             }
         })();
-
+        // ________________________________________________________________ }}}
+        // ___ addChild ___________________________________________________ {{{
         nodeAPI.addChild = function(nodeName) {
             if (!children[nodeName]) {
                 var childNode = makeEventNode(nodeName, nodeAPI);
@@ -240,15 +285,18 @@
                 throw new CustomEventError('addChild: nodeName should be unique: '+nodeName);
             }
         };
-
+        // ________________________________________________________________ }}}
+        // ___ getChild ___________________________________________________ {{{
         nodeAPI.getChild = function(nodeName) {
             return children[nodeName];
         };
-
+        // ________________________________________________________________ }}}
+        // ___ _to_path ___________________________________________________ {{{
         function to_path(path) {
             return typeof path === 'string' ? new NodePath(path, nodeAPI) : path;
         }
-
+        // ________________________________________________________________ }}}
+        // ___ find, match, findOrCreate __________________________________ {{{
         function find_node(path) {
             var path_items = path.pathItems()
               , next_name
@@ -322,6 +370,25 @@
         nodeAPI.find = make_finder('find', find_node);
         nodeAPI.match = make_finder('match', match_node);
         nodeAPI.findOrCreate = make_finder('findOrCreate', find_or_create_node);
+        // ________________________________________________________________ }}}
+
+        nodeAPI.createEventListener = function(action) {
+            return makeCustomEventListener(nodeAPI, action);
+        };
+
+        nodeAPI.on = function(path, action) {
+            var node = nodeAPI.findOrCreate(path);
+            return node.createEventListener(action);
+        };
+
+        nodeAPI.emit = function(path) {
+            var node = nodeAPI.find(path);
+            if (node) {
+                node.listener.forEach(function(listener) {
+                    listener.emit();
+                });
+            }
+        };
 
         return nodeAPI;
     }
@@ -337,6 +404,9 @@
     _e.log = log;
     _e.rootNode = g_rootNode;
     _e.NodePath = NodePath;
+
+    _e.on = g_rootNode.on;
+    _e.emit = g_rootNode.emit;
 
     // ____________________________________________________________________ }}}
 
