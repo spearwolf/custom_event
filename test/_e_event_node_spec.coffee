@@ -86,5 +86,42 @@ describe "CustomEventNode API", ->
             should.exist c
 
 
+    describe "find(path)", ->
+
+        it "should find node from path or undefined if not found", ->
+
+            node.findOrCreate 'find/a/b/c/d/e/f/g/h/i'
+
+            c = node.find 'find/a/b/c'
+            should.exist c
+            c.nodeName.should.equal 'c'
+
+            e = c.find '/find/a/b/c/d/e'
+            should.exist e
+            e.nodeName.should.equal 'e'
+
+            i = e.find 'f/g/h/i'
+            should.exist i
+            i.nodeName.should.equal 'i'
+
+            should.not.exist e.find '/find2/g/u/z'
+            should.not.exist c.find 'g/u/z'
+
+
+    describe "match(path)", ->
+
+        it "should find best matching node from path and returns restPath", ->
+
+            node.findOrCreate 'match/a/b/c'
+
+            match = node.match '/match/a/x/y'
+            should.exist match
+            match.should.have.property 'node'
+            match.node.should.have.property 'nodeName', 'a'
+            match.should.have.property 'restPath'
+            match.restPath.toString().should.equal 'x/y'
+            match.restPath.isAbsolute.should.be.false
+
+
 
 

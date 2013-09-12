@@ -214,17 +214,10 @@
                 type: 'CustomEventNode',
                 nodeName: name,
                 isRootNode: !parentNode,
-                parentNode: parentNode
+                parentNode: parentNode,
+                rootNode: g_rootNode
             }
           ;
-
-        nodeAPI.rootNode = (function(){
-            if (nodeAPI.isRootNode) {
-                return undefined;
-            } else {
-                return g_rootNode;
-            }
-        })();
 
         nodeAPI.path = (function(){
             if (nodeAPI.isRootNode) {
@@ -256,7 +249,21 @@
             return typeof path === 'string' ? new NodePath(path, nodeAPI) : path;
         }
 
-        function _find_or_create(path) {
+        function find_node(path) {
+            var path_items = path.pathItems()
+              , next_name
+              , node = nodeAPI
+              ;
+            while (!!(next_name = path_items.shift())) {
+                node = node.getChild(next_name);
+                if (!node) {
+                    break;
+                }
+            }
+            return node;
+        }
+
+        function find_or_create_node(path) {
             var path_items = path.pathItems()
               , next_name
               , next_node
@@ -272,22 +279,49 @@
             return cur_node;
         }
 
-        nodeAPI.findOrCreate = function(path) {
-            path = to_path(path);
-            if (path.isAbsolute) {
-                if (nodeAPI.isRootNode) {
-                    return _find_or_create(path);
-                } else {
-                    return nodeAPI.rootNode.findOrCreate(path);
+        function match_node(path) {
+            var path_items = path.pathItems()
+              , next_name
+              , next_node
+              , cur_node = nodeAPI
+              ;
+            while (!!(next_name = path_items.shift())) {
+                next_node = cur_node.getChild(next_name);
+                if (!next_node) {
+                    path_items.splice(0, 0, next_name);
+                    break;
                 }
-            } else { // path.node is available
-                if (nodeAPI === path.node) {
-                    return _find_or_create(path);
-                } else {
-                    return path.node.findOrCreate(path);
-                }
+                cur_node = next_node;
             }
-        };
+            var rest_path;
+            if (path_items.length > 0) {
+                rest_path = new NodePath(path_items.join('/'), cur_node);
+            }
+            return { node: cur_node, restPath: rest_path };
+        }
+
+        function make_finder(finderMethod, actionCallback) {
+            return function(path) {
+                path = to_path(path);
+                if (path.isAbsolute) {
+                    if (nodeAPI.isRootNode) {
+                        return actionCallback(path);
+                    } else {
+                        return nodeAPI.rootNode[finderMethod](path);
+                    }
+                } else { // path.node is available
+                    if (nodeAPI === path.node) {
+                        return actionCallback(path);
+                    } else {
+                        return path.node[finderMethod](path);
+                    }
+                }
+            };
+        }
+
+        nodeAPI.find = make_finder('find', find_node);
+        nodeAPI.match = make_finder('match', match_node);
+        nodeAPI.findOrCreate = make_finder('findOrCreate', find_or_create_node);
 
         return nodeAPI;
     }
