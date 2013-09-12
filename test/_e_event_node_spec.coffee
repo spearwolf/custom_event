@@ -122,6 +122,20 @@ describe "CustomEventNode API", ->
             match.restPath.toString().should.equal 'x/y'
             match.restPath.isAbsolute.should.be.false
 
+            match = node.match '/match2/a/x/y'
+            should.exist match
+            match.should.have.property 'node'
+            match.node.isRootNode.should.be.true
+            match.should.have.property 'restPath'
+            match.restPath.toString().should.equal 'match2/a/x/y'
+            match.restPath.isAbsolute.should.be.false
+
+            match = node.match '/match/a/b/c'
+            should.exist match
+            match.should.have.property 'node'
+            match.node.should.have.property 'nodeName', 'c'
+            match.should.have.ownProperty 'restPath'
+            should.not.exist match.restPath
 
 
 
