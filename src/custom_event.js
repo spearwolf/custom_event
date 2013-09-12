@@ -224,18 +224,47 @@
             }
           ;
 
+        function find_function(obj, pathItems) {
+            var propName;
+            while (!!(propName = pathItems.shift())) {
+                if (propName in obj) {
+                    obj = obj[propName];
+                } else {
+                    return;
+                }
+            }
+            if (typeof obj === 'function') {
+                return obj;
+            } else {
+                return;
+            }
+        }
+
         if ('function' === action_type) {
 
-            listenerAPI.emit = function() {
-                // TODO
-                action.apply(root, arguments);
+            listenerAPI.callAction = function(restPath) {
+                // TODO filter: pause,..
+                if (!restPath) {
+                    action.apply(root);
+                }
+            };
+
+        } else if ('object' === action_type) {
+
+            listenerAPI.callAction = function(restPath) {
+                // TODO filter: pause,..
+                if (restPath) {
+                    var fn = find_function(action, restPath.pathItems());
+                    if (fn) {
+                        fn.apply(action);
+                    }
+                }
             };
 
         } else {
-            log.warn('unsupported listener action type:', action_type);
+            log.error('unsupported listener action type:', action_type);
 
-            listenerAPI.emit = function() {
-            };
+            listenerAPI.callAction = function(){};
         }
 
 
@@ -332,6 +361,7 @@
               , next_name
               , next_node
               , cur_node = nodeAPI
+              , visited_nodes = [{ node: cur_node, restPath: path }]
               ;
             while (!!(next_name = path_items.shift())) {
                 next_node = cur_node.getChild(next_name);
@@ -340,17 +370,26 @@
                     break;
                 }
                 cur_node = next_node;
+                if (cur_node.listener.length > 0) {
+                    visited_nodes.push({
+                        node: cur_node,
+                        restPath: (path_items.length > 0 ? new NodePath(path_items.join('/')) : undefined)
+                    });
+                }
             }
             var rest_path;
             if (path_items.length > 0) {
                 rest_path = new NodePath(path_items.join('/'), cur_node);
             }
-            return { node: cur_node, restPath: rest_path };
+            return { node: cur_node, restPath: rest_path, visitedNodes: visited_nodes };
         }
 
-        function make_finder(finderMethod, actionCallback) {
+        function make_finder(finderMethod, actionCallback, travelAlwaysFromRoot) {
             return function(path) {
                 path = to_path(path);
+                if (travelAlwaysFromRoot) {
+                    path = path.absolutePath();
+                }
                 if (path.isAbsolute) {
                     if (nodeAPI.isRootNode) {
                         return actionCallback(path);
@@ -369,6 +408,7 @@
 
         nodeAPI.find = make_finder('find', find_node);
         nodeAPI.match = make_finder('match', match_node);
+        nodeAPI.deepMatch = make_finder('deepMatch', match_node, true);
         nodeAPI.findOrCreate = make_finder('findOrCreate', find_or_create_node);
         // ________________________________________________________________ }}}
 
@@ -377,17 +417,16 @@
         };
 
         nodeAPI.on = function(path, action) {
-            var node = nodeAPI.findOrCreate(path);
-            return node.createEventListener(action);
+            return nodeAPI.findOrCreate(path).createEventListener(action);
         };
 
         nodeAPI.emit = function(path) {
-            var node = nodeAPI.find(path);
-            if (node) {
-                node.listener.forEach(function(listener) {
-                    listener.emit();
+            var match = nodeAPI.deepMatch(path);
+            match.visitedNodes.forEach(function(node) {
+                node.node.listener.forEach(function(listener) {
+                   listener.callAction(node.restPath);
                 });
-            }
+            });
         };
 
         return nodeAPI;
