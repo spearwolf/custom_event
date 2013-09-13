@@ -114,7 +114,7 @@ describe "CustomEventNode API", ->
 
     describe "match(path)", ->
 
-        it "should find best matching node from path and returns restPath", ->
+        it "should find best matching node from path and returns restPathItems", ->
 
             node.findOrCreate 'match/a/b/c'
 
@@ -122,31 +122,30 @@ describe "CustomEventNode API", ->
             should.exist match
             match.should.have.property 'node'
             match.node.should.have.property 'nodeName', 'a'
-            match.should.have.property 'restPath'
-            match.restPath.toString().should.equal 'x/y'
-            match.restPath.isAbsolute.should.be.false
+            match.should.have.property 'restPathItems'
+            match.restPathItems.should.eql ['x', 'y']
 
             match = node.match '/match2/a/x/y'
             should.exist match
             match.should.have.property 'node'
             match.node.isRootNode.should.be.true
-            match.should.have.property 'restPath'
-            match.restPath.toString().should.equal 'match2/a/x/y'
-            match.restPath.isAbsolute.should.be.false
+            match.should.have.property 'restPathItems'
+            match.restPathItems.should.eql ['match2', 'a', 'x', 'y']
 
             match = node.match '/match/a/b/c'
             should.exist match
             match.should.have.property 'node'
             match.node.should.have.property 'nodeName', 'c'
-            match.should.have.ownProperty 'restPath'
-            should.not.exist match.restPath
+            match.should.have.ownProperty 'restPathItems'
+            should.not.exist match.restPathItems
 
             match = node.match '/'
             should.exist match
             match.should.have.property 'node'
             match.node.isRootNode.should.be.true
-            match.should.have.ownProperty 'restPath'
-            should.not.exist match.restPath
+            match.should.have.ownProperty 'restPathItems'
+            should.not.exist match.restPathItems
 
+    # TODO deepMatch(path)
 
 

@@ -214,12 +214,14 @@
     function makeCustomEventListener(node, action) {
 
         var action_type = typeof action
+          , isDeepListener = action_type === 'object'
 
           , listenerAPI = {
                 id: (g_nextListenerId++),
                 node: node,
                 type: 'CustomEventListener',
                 actionType: action_type,
+                isDeepListener: isDeepListener,
                 action: action
             }
           ;
@@ -242,19 +244,19 @@
 
         if ('function' === action_type) {
 
-            listenerAPI.callAction = function(restPath) {
+            listenerAPI.callAction = function(restPathItems) {
                 // TODO filter: pause,..
-                if (!restPath) {
+                if (!restPathItems) {
                     action.apply(root);
                 }
             };
 
         } else if ('object' === action_type) {
 
-            listenerAPI.callAction = function(restPath) {
+            listenerAPI.callAction = function(restPathItems) {
                 // TODO filter: pause,..
-                if (restPath) {
-                    var fn = find_function(action, restPath.pathItems());
+                if (restPathItems) {
+                    var fn = find_function(action, restPathItems);
                     if (fn) {
                         fn.apply(action);
                     }
@@ -268,7 +270,11 @@
         }
 
 
-        node.listener.push(listenerAPI);
+        if (isDeepListener) {
+            node.deepListener.push(listenerAPI);
+        } else {
+            node.listener.push(listenerAPI);
+        }
         g_allListener[listenerAPI.id] = listenerAPI;
 
         return listenerAPI;
@@ -287,7 +293,8 @@
                 parentNode: parentNode,
                 rootNode: g_rootNode,
 
-                listener: []
+                listener: [],
+                deepListener: []
             }
           ;
 
@@ -361,10 +368,15 @@
               , next_name
               , next_node
               , cur_node = nodeAPI
+              , rest_path
               , visited_nodes
               ;
+
             if (isDeepMatch) {
-                visited_nodes = [{ node: cur_node, restPath: path }];
+                visited_nodes = [{
+                    node: cur_node,
+                    restPathItems: path_items.slice(0)
+                }];
             }
 
             while (!!(next_name = path_items.shift())) {
@@ -378,23 +390,24 @@
                 cur_node = next_node;
 
                 if (isDeepMatch) {
-                    if (cur_node.listener.length > 0) {
+                    if (cur_node.listener.length > 0) {  // TODO deepListener
                         visited_nodes.push({
                             node: cur_node,
-                            restPath: (path_items.length > 0 ? new NodePath(path_items.join('/')) : undefined)
+                            restPathItems: (path_items.length > 0 ? path_items.slice(0) : undefined)
                         });
                     }
                 }
             }
 
-            var rest_path;
-            if (path_items.length > 0) {
-                rest_path = new NodePath(path_items.join('/'), cur_node);
-            }
+            //if (isDeepMatch) {
+                //console.log('DEEPMATCH', visited_nodes.map(function(m){
+                    //return [(m.node.isRootNode ? '<root>' : '<'+m.node.nodeName+'>'), (m.restPathItems ? m.restPathItems.join('/') : '-/-')];
+                //}));
+            //}
 
             return {
                 node: cur_node,
-                restPath: rest_path,
+                restPathItems: (path_items.length > 0 ? path_items : undefined),
                 visitedNodes: visited_nodes
             };
         }
@@ -435,11 +448,15 @@
             return nodeAPI.findOrCreate(path).createEventListener(action);
         };
 
+        nodeAPI.forEachListener = function(fn) {
+            nodeAPI.listener.forEach(fn);
+            nodeAPI.deepListener.forEach(fn);
+        };
+
         nodeAPI.emit = function(path) {
-            var match = nodeAPI.deepMatch(path);
-            match.visitedNodes.forEach(function(node) {
-                node.node.listener.forEach(function(listener) {
-                   listener.callAction(node.restPath);
+            nodeAPI.deepMatch(path).visitedNodes.forEach(function(match) {
+                match.node.forEachListener(function(listener) {
+                   listener.callAction(match.restPathItems);
                 });
             });
         };

@@ -13,12 +13,18 @@ describe "_e.on() and _e.emit()", ->
         deep:
             doa: (-> register.doa += 4 )
 
+    #console.log('EMIT', '/on/emit/bar/foo')
     _e.emit '/on/emit/bar/foo'
+
+    #console.log('EMIT', '/on/emit/bar')
     _e.emit '/on/emit/bar'
+
+    #console.log('EMIT', '/on/emit/bar/plah')
     _e.emit '/on/emit/bar/plah'
 
     _e.rootNode.findOrCreate '/on/emit/bar/deep/doa'
 
+    #console.log('EMIT', '/on/emit/bar/deep/doa')
     _e.emit '/on/emit/bar/deep/doa'
 
     it 'should work', ->
