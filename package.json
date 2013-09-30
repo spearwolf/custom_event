@@ -1,36 +1,35 @@
 {
-    "name":         "custom_event",
-    "version":      "0.8.0",
-    "url":          "https://github.com/spearwolf/custom_event",
-    "repository": {
-        "type":     "git",
-        "url":      "git://github.com/spearwolf/custom_event.git"
-    },
-    "license":      "MIT",
-    "author": {
-        "name":     "Wolfger Schramm",
-        "email":    "wolfger@spearwolf.de",
-        "url":      "https://github.com/spearwolf"
-    },
-
-    "main":         "custom_event.min.js",
-    "engines": {
-        "node":     "0.10"
-    },
-    "scripts": {
-        "test":     "grunt test",
-        "build":    "grunt build"
-    },
-
-    "devDependencies": {
-        "grunt-mocha-test": "~0.6.3",
-        "mocha": "~1.12.1",
-        "should": "~1.2.2",
-        "sinon": "~1.7.3",
-        "coffee-script": "~1.6.3",
-        "grunt": "~0.4.1",
-        "grunt-contrib-coffee": "~0.7.0",
-        "grunt-contrib-clean": "~0.5.0",
-        "grunt-contrib-uglify": "~0.2.4"
-    }
+  "name": "custom_event",
+  "version": "0.8.0",
+  "url": "https://github.com/spearwolf/custom_event",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/spearwolf/custom_event.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Wolfger Schramm",
+    "email": "wolfger@spearwolf.de",
+    "url": "https://github.com/spearwolf"
+  },
+  "main": "custom_event.min.js",
+  "engines": {
+    "node": "0.10"
+  },
+  "scripts": {
+    "test": "grunt test",
+    "build": "grunt build"
+  },
+  "devDependencies": {
+    "grunt-mocha-test": "~0.6.3",
+    "mocha": "~1.12.1",
+    "should": "~1.2.2",
+    "sinon": "~1.7.3",
+    "coffee-script": "~1.6.3",
+    "grunt": "~0.4.1",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-uglify": "~0.2.4",
+    "benchmark": "~1.0.0"
+  }
 }

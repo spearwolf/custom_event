@@ -28,7 +28,7 @@ describe "_e", ->
 
     describe "rootNode", ->
 
-        it "exists", -> _e.rootNode.should.be.a "object"
+        it "exists", -> _e.rootNode.should.be.a "function"
 
         it "isRootNode is true", -> _e.rootNode.isRootNode.should.be.true
 

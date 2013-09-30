@@ -14,7 +14,7 @@ describe "CustomEventNode API", ->
         it "exists", -> node.addChild.should.be.a 'function'
 
         it "create a CustomEventNode", ->
-            child.should.be.a 'object'
+            child.should.be.a 'function'
             child.should.have.property 'type', 'CustomEventNode'
 
         grand_child = child.addChild 'bar'
@@ -57,7 +57,7 @@ describe "CustomEventNode API", ->
         it 'returns childNode', ->
             foo = node.getChild 'foo'
             should.exist foo
-            foo.should.be.a 'object'
+            foo.should.be.a 'function'
             foo.should.have.ownProperty 'type', 'CustomEventNode'
 
         it 'returns undefined if child not found', ->

@@ -209,8 +209,24 @@
     // ___ CustomEventListener ____________________________________________ {{{
 
     var g_nextListenerId = 1
-      , g_allListener = {}
+      //, g_allListener = {}
       ;
+
+    function find_function(obj, pathItems) {
+        var propName;
+        while (!!(propName = pathItems.shift())) {
+            if (propName in obj) {
+                obj = obj[propName];
+            } else {
+                return;
+            }
+        }
+        if (typeof obj === 'function') {
+            return obj;
+        } else {
+            return;
+        }
+    }
 
     function makeCustomEventListener(node, action) {
 
@@ -226,22 +242,6 @@
                 action: action
             }
           ;
-
-        function find_function(obj, pathItems) {
-            var propName;
-            while (!!(propName = pathItems.shift())) {
-                if (propName in obj) {
-                    obj = obj[propName];
-                } else {
-                    return;
-                }
-            }
-            if (typeof obj === 'function') {
-                return obj;
-            } else {
-                return;
-            }
-        }
 
         if ('function' === action_type) {
 
@@ -278,13 +278,26 @@
             listenerAPI.callAction = function(){};
         }
 
-
         if (isDeepListener) {
             node.deepListener.push(listenerAPI);
         } else {
             node.listener.push(listenerAPI);
         }
-        g_allListener[listenerAPI.id] = listenerAPI;
+
+        listenerAPI.destroy = function() {
+            var listener = isDeepListener ? node.deepListener : node.listener
+              , i = listener.indexOf(listenerAPI);
+            if (i >= 0) {
+                listener.splice(i, 1);
+            }
+            for (var prop in listenerAPI) {
+                if (listenerAPI.hasOwnProperty(prop)) {
+                    delete listenerAPI[prop];
+                }
+            }
+        };
+
+        //g_allListener[listenerAPI.id] = listenerAPI;
 
         return listenerAPI;
     }
@@ -294,18 +307,44 @@
 
     function makeEventNode(name, parentNode) {
 
-        var children = {}
-          , nodeAPI = {
-                type: 'CustomEventNode',
-                nodeName: name,
-                isRootNode: !parentNode,
-                parentNode: parentNode,
-                rootNode: g_rootNode,
+        var children = {};
 
-                listener: [],
-                deepListener: []
+        var nodeAPI = function(path, callback) {
+            var node = nodeAPI.findOrCreate(to_path(path))
+              , listener = [];
+
+            var sub_node_api = {
+                on: function(_path, action) {
+                    var listen = node.on(_path, action);
+                    listener.push(listen);
+                    return listen;
+                },
+                emit: node.emit,
+                clear: function() {
+                    listener.forEach(function(listen) {
+                        if (typeof listen.destroy === 'function') {
+                            listen.destroy();
+                        }
+                    });
+                    listener = [];
+                },
+                group: node
+            };
+
+            if (typeof callback === 'function') {
+                callback(sub_node_api);
             }
-          ;
+
+            return sub_node_api;
+        };
+
+        nodeAPI.type = 'CustomEventNode';
+        nodeAPI.nodeName = name;
+        nodeAPI.isRootNode = !parentNode;
+        nodeAPI.parentNode = parentNode;
+        nodeAPI.rootNode = g_rootNode;
+        nodeAPI.listener = [];
+        nodeAPI.deepListener = [];
 
         // ___ path _______________________________________________________ {{{
         nodeAPI.path = (function(){
@@ -491,6 +530,8 @@
 
     _e.on = g_rootNode.on;
     _e.emit = g_rootNode.emit;
+
+    _e.group = g_rootNode;
 
     // ____________________________________________________________________ }}}
 
