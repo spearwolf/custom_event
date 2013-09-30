@@ -22,7 +22,7 @@ describe "_e.on() and _e.emit()", ->
     #console.log('EMIT', '/on/emit/bar/plah')
     _e.emit '/on/emit/bar/plah'
 
-    _e.rootNode.findOrCreate '/on/emit/bar/deep/doa'
+    #_e.rootNode.findOrCreate '/on/emit/bar/deep/doa'
 
     #console.log('EMIT', '/on/emit/bar/deep/doa')
     _e.emit '/on/emit/bar/deep/doa'

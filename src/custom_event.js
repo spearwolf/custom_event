@@ -1,4 +1,5 @@
-/*globals define exports:true */
+/*globals exports:true */
+/*globals define */
 (function() {
 
     // ___ Namespace, CommonJS and AMD Support ____________________________ {{{
@@ -244,21 +245,29 @@
 
         if ('function' === action_type) {
 
-            listenerAPI.callAction = function(restPathItems) {
+            listenerAPI.callAction = function(restPathItems, args) {
                 // TODO filter: pause,..
                 if (!restPathItems) {
-                    action.apply(root);
+                    if (args) {
+                        action.apply(root, args);
+                    } else {
+                        action.apply(root);
+                    }
                 }
             };
 
         } else if ('object' === action_type) {
 
-            listenerAPI.callAction = function(restPathItems) {
+            listenerAPI.callAction = function(restPathItems, args) {
                 // TODO filter: pause,..
                 if (restPathItems) {
                     var fn = find_function(action, restPathItems);
                     if (fn) {
-                        fn.apply(action);
+                        if (args) {
+                            fn.apply(action, args);
+                        } else {
+                            fn.apply(action);
+                        }
                     }
                 }
             };
@@ -454,9 +463,13 @@
         };
 
         nodeAPI.emit = function(path) {
+            var args = null;
+            if (arguments.length > 1) {
+                args = Array.prototype.slice.call(arguments, 1);
+            }
             nodeAPI.deepMatch(path).visitedNodes.forEach(function(match) {
                 match.node.forEachListener(function(listener) {
-                   listener.callAction(match.restPathItems);
+                    listener.callAction(match.restPathItems, args);
                 });
             });
         };
