@@ -31,6 +31,12 @@ describe "custom_event groups", ->
     #_e.emit '/group/emit/bar/deep/doa'
     _e.group('group').group('emit/bar').emit 'deep/doa'
 
+
+    #_e.group 'foo', ->
+        #@on 'bar', -> ...
+        #@on 'plah', -> ...
+
+
     it 'should work', ->
 
         register.foo.should.equal 1

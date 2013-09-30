@@ -332,7 +332,7 @@
             };
 
             if (typeof callback === 'function') {
-                callback(sub_node_api);
+                callback.call(sub_node_api, sub_node_api);
             }
 
             return sub_node_api;
