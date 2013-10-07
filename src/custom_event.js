@@ -115,9 +115,7 @@
 
     // ___ custom_event core __________________________________________________
 
-    var g_rootNode
-      //, g_allNodes = {}
-      ;
+    var g_rootNode;
 
     // ___ CustomEventError _______________________________________________ {{{
 
@@ -208,11 +206,9 @@
     // ____________________________________________________________________ }}}
     // ___ CustomEventListener ____________________________________________ {{{
 
-    var g_nextListenerId = 1
-      //, g_allListener = {}
-      ;
+    var g_nextListenerId = 1;
 
-    function find_function(obj, pathItems) {
+    function find_function(obj, pathItems) {  // {{{
         var propName;
         while (!!(propName = pathItems.shift())) {
             if (propName in obj) {
@@ -227,6 +223,7 @@
             return;
         }
     }
+    // }}}
 
     function makeCustomEventListener(node, action) {
 
@@ -239,14 +236,24 @@
                 type: 'CustomEventListener',
                 actionType: action_type,
                 isDeepListener: isDeepListener,
-                action: action
+                action: action,
+                isPaused: false
             }
           ;
 
+        // setPause ___________________________________________________________
+        //
+        listenerAPI.setPause = function(pause) {
+            listenerAPI.isPaused = !!pause;
+        };
+
+        // callAction _________________________________________________________
+        //
         if ('function' === action_type) {
 
             listenerAPI.callAction = function(restPathItems, args) {
-                // TODO filter: pause,..
+                if (listenerAPI.isPaused) return;
+
                 if (!restPathItems) {
                     if (args) {
                         action.apply(root, args);
@@ -259,7 +266,8 @@
         } else if ('object' === action_type) {
 
             listenerAPI.callAction = function(restPathItems, args) {
-                // TODO filter: pause,..
+                if (listenerAPI.isPaused) return;
+
                 if (restPathItems) {
                     var fn = find_function(action, restPathItems);
                     if (fn) {
@@ -278,12 +286,16 @@
             listenerAPI.callAction = function(){};
         }
 
+        // add listener to EventNode __________________________________________
+        //
         if (isDeepListener) {
             node.deepListener.push(listenerAPI);
         } else {
             node.listener.push(listenerAPI);
         }
 
+        // destroy ____________________________________________________________
+        //
         listenerAPI.destroy = function() {
             var listener = isDeepListener ? node.deepListener : node.listener
               , i = listener.indexOf(listenerAPI);
@@ -296,8 +308,6 @@
                 }
             }
         };
-
-        //g_allListener[listenerAPI.id] = listenerAPI;
 
         return listenerAPI;
     }
@@ -314,10 +324,24 @@
               , listener = [];
 
             var sub_node_api = {
+                isPaused: false,
+                setPause: function(pause) {
+                    sub_node_api.isPaused = !!pause;
+                    listener.forEach(function(listen) {
+                        listen.setPause(pause);
+                    });
+                    return sub_node_api.isPaused;
+                },
+                off: function() { return sub_node_api.setPause(true); },
                 on: function(_path, action) {
-                    var listen = node.on(_path, action);
-                    listener.push(listen);
-                    return listen;
+                    if (arguments.length === 0) {
+                        return sub_node_api.setPause(false);
+                    } else {
+                        var listen = node.on(_path, action);
+                        listen.setPause(sub_node_api.isPaused);
+                        listener.push(listen);
+                        return listen;
+                    }
                 },
                 emit: node.emit,
                 clear: function() {
@@ -463,6 +487,7 @@
         function make_finder(finderMethod, actionCallback, travelAlwaysFromRoot) {
             return function(path) {
                 path = to_path(path);
+                // node paused??
                 if (travelAlwaysFromRoot) {
                     path = path.absolutePath();
                 }

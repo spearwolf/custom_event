@@ -5,10 +5,29 @@
                           |_____|                     |___|    
 
 
-CustomEvent is a library for progamming JavaScript in an event-driven manner.
+custom_event.js is yet another event-driven mirco-framework
+based on the publish-subscribe messaging pattern.
 
-Look into ./docs/ for documentation and examples.
+Subscribers will receive all events published to a topic:
+
+```javascript
+_e.on('hello', function(name) { console.log('hello', name); })
+```
+
+Publishing an event is easy:
+
+```javascript
+_e.emit('hello', 'world')
+´´´
+
+Topics are organized in a tree-based hierarchy using '/' as node separator.
+
+```javascript
+_e.on('/foo/bar/plah', function() { /* ... */ })
+```
+
+
 
 have fun!
 wolfger@spearwolf.de
-2011-07-29
+2011-2013
