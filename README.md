@@ -6,25 +6,25 @@
                           |_____|                     |___|    
 ```
 
-*custom_event.js* is yet another event-driven mirco-framework
+*custom_event.js* is yet another event-driven micro-framework
 based on the publish-subscribe messaging pattern.
 
 
 ### Publish & Subscribe
 
-Subscribers will receive all events published to a topic:
+Subscribers will receive all messages published to a topic:
 
 ```javascript
 _e.on('hello', function(name) { console.log('hello', name); })
 ```
 
-Publishing an event is easy:
+Publishing messages is super-simple:
 
 ```javascript
 _e.emit('hello', 'world')
 ```
 
-Topics are organized in a tree-based hierarchy using a '/' as path separator.
+Topics are organized in a tree-like hierarchy using a '/' as path separator.
 
 ```javascript
 _e.on('/foo/bar/plah', function() { /* ... */ })
@@ -33,7 +33,7 @@ _e.on('/foo/bar/plah', function() { /* ... */ })
 
 ### Grouping Subscribers
 
-Subscribers can be a simple __function__ _or_ __any javascript object__ _or_ created within __groups__:
+Subscribers can be a __function__ _or_ __any javascript object__ _or_ created within __groups__:
 
 ```javascript
 
@@ -60,6 +60,55 @@ _e.group('my/module/foo', function(foo) {
 
 ```
 
+
+### Subscriber Parameters
+
+All message parameters will be passed on to the subscribers.
+
+```javascript
+_e.on('foo/bar', function(a, b, c) { console.log('a:', a, 'b:', b, 'c:', c); })
+
+_e.emit('foo/bar', 1, 2, 3);
+```
+
+
+### Subscriber API
+
+If a subscriber is created you will get an object
+which contains the subscriber API as result.
+
+```javascript
+bar = _e.on('foo/bar', function(){ /* ... */ })
+
+// works also for groups
+plah = _e.group('foo/plah', { /* ... */ })
+```
+
+### isPaused
+
+Boolean property. Indicates if the subscriber is active (receives messages) or not.
+
+```javascript
+console.log( plah.isPaused )   // => "true"
+```
+
+### setPause(pause)
+
+Enables/disables pause state for the subscriber.
+
+```javascript
+plah.setPause(true)
+```
+
+### destroy()
+
+Destroy the subscriber. No messages will be received in future.
+
+```javascript
+plah.destroy()
+
+plah.setPause(true)  // will throw an Error -> setPause() is undefined
+```
 
 
 
