@@ -53,7 +53,7 @@ _e.on('/foo/bar', {
 })
 
 // using the grouping api
-_e.group('my/module/foo', function(foo) {
+_e.mod('my/module/foo', function(foo) {
     foo.on('foo', function() { /* '/my/module/foo/foo' */ });
     foo.on('bar', function() { /* '/my/module/foo/bar' */ });
 })
@@ -80,7 +80,7 @@ which contains the subscriber api as result.
 ```javascript
 bar = _e.on('foo/bar', function(){ /* ... */ })
 
-plah = _e.group('foo/plah', { /* ... */ })  // works also for groups
+plah = _e.mod('foo/plah', function(plah){ /* ... */ })  // works also for groups
 ```
 
 #### isPaused
@@ -95,7 +95,7 @@ console.log( plah.isPaused )   // => "false"
 
 Enables/disables pause state.
 For groups there are additional _on()_ and _off()_ methods available -
-but there are just syntactic sugar.
+but its just syntactic sugar.
 
 ```javascript
 plah.setPause(true)
