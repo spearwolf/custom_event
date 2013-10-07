@@ -352,7 +352,7 @@
                     });
                     listener = [];
                 },
-                group: node
+                mod: node
             };
 
             if (typeof callback === 'function') {
@@ -556,7 +556,7 @@
     _e.on = g_rootNode.on;
     _e.emit = g_rootNode.emit;
 
-    _e.group = g_rootNode;
+    _e.mod = g_rootNode;
 
     // ____________________________________________________________________ }}}
 

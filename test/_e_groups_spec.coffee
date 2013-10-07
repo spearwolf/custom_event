@@ -5,7 +5,7 @@ describe "custom_event groups", ->
 
     register = foo: 0, bar: 0, plah: 0, doa: 0
 
-    group = _e.group 'group/emit'
+    group = _e.mod 'group/emit'
     console.log('e ->', group)
 
     on_foo = group.on 'bar/foo', -> register.foo += 1
@@ -29,12 +29,7 @@ describe "custom_event groups", ->
 
     #console.log('EMIT', '/on/emit/bar/deep/doa')
     #_e.emit '/group/emit/bar/deep/doa'
-    _e.group('group').group('emit/bar').emit 'deep/doa'
-
-
-    #_e.group 'foo', ->
-        #@on 'bar', -> ...
-        #@on 'plah', -> ...
+    _e.mod('group').mod('emit/bar').emit 'deep/doa'
 
 
     it 'should work', ->
