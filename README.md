@@ -102,8 +102,8 @@ plah.setPause(true)
 
 console.log( plah.isPaused )   // => "true"
 
-plah.on()                      // isPaused === false
-plah.off()                     // isPaused === true
+plah.on()                      // plah.isPaused === false
+plah.off()                     // plah.isPaused === true
 ```
 
 #### destroy()
