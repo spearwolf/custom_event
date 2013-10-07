@@ -330,6 +330,11 @@
                     listener.forEach(function(listen) {
                         listen.setPause(pause);
                     });
+                    if (sub_node_api.isPaused) {
+                        sub_node_api.emit = function(){};
+                    } else {
+                        sub_node_api.emit = node.emit;
+                    }
                     return sub_node_api.isPaused;
                 },
                 off: function() { return sub_node_api.setPause(true); },
@@ -344,7 +349,7 @@
                     }
                 },
                 emit: node.emit,
-                clear: function() {
+                destroy: function() {
                     listener.forEach(function(listen) {
                         if (typeof listen.destroy === 'function') {
                             listen.destroy();

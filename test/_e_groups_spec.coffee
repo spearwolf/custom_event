@@ -39,7 +39,7 @@ describe "custom_event groups", ->
         register.plah.should.equal 3
         register.doa.should.equal 4
 
-        group.clear()
+        group.destroy()
         _e.emit 'group/emit/bar'
         register.bar.should.equal 2
 
