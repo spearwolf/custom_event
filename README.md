@@ -111,7 +111,7 @@ plah.off()                     // plah.isPaused === true
 
 #### destroy()
 
-Destroy subscription. No messages will be received in future. _All properties will be removed._
+Destroy the subscription. No messages will be received in future. _All properties will be removed._
 
 ```javascript
 plah.destroy()
@@ -119,7 +119,7 @@ plah.destroy()
 plah.setPause(true)    // will throw an Error -> setPause() is undefined
 ```
 
-
+***
 
 have fun! -
 wolfger@spearwolf.de
