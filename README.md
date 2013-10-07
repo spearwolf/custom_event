@@ -94,11 +94,16 @@ console.log( plah.isPaused )   // => "false"
 #### setPause(pause)
 
 Enables/disables pause state.
+For groups there are additional _on()_ and _off()_ methods available -
+but there are just syntactic sugar.
 
 ```javascript
 plah.setPause(true)
 
 console.log( plah.isPaused )   // => "true"
+
+plah.on()                      // isPaused === false
+plah.off()                     // isPaused === true
 ```
 
 #### destroy()
@@ -108,7 +113,7 @@ Destroy subscriber. No messages will be received in future. All properties will 
 ```javascript
 plah.destroy()
 
-plah.setPause(true)  // will throw an Error -> setPause() is undefined
+plah.setPause(true)    // will throw an Error -> setPause() is undefined
 ```
 
 
