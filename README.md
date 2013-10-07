@@ -1,9 +1,10 @@
+```text
              _                                   _       _     
  ___ _ _ ___| |_ ___ _____       ___ _ _ ___ ___| |_    |_|___ 
 |  _| | |_ -|  _| . |     |     | -_| | | -_|   |  _|_  | |_ -|
 |___|___|___|_| |___|_|_|_|_____|___|\_/|___|_|_|_| |_|_| |___|
                           |_____|                     |___|    
-
+```
 
 custom_event.js is yet another event-driven mirco-framework
 based on the publish-subscribe messaging pattern.
@@ -18,7 +19,7 @@ Publishing an event is easy:
 
 ```javascript
 _e.emit('hello', 'world')
-´´´
+```
 
 Topics are organized in a tree-based hierarchy using '/' as node separator.
 
