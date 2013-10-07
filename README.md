@@ -7,7 +7,7 @@
 ```
 
 *custom_event.js* is yet another event-driven micro-framework
-based on the publish-subscribe messaging pattern.
+based on the [publish-subscribe messaging pattern](http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).
 
 
 ### Publish & Subscribe
@@ -52,9 +52,12 @@ _e.on('/foo/bar', {
     }
 })
 
-// using the grouping api
+// using the grouping api (groups aka modules)
+//
 _e.mod('my/module/foo', function(foo) {
+
     foo.on('foo', function() { /* '/my/module/foo/foo' */ });
+
     foo.on('bar', function() { /* '/my/module/foo/bar' */ });
 })
 
@@ -72,15 +75,15 @@ _e.emit('foo/bar', 1, 2, 3);
 ```
 
 
-### Subscriber API
+### Subscription API
 
-If a subscriber is created you will get an object
-which contains the subscriber api as result.
+If a subscriber is created you will get an object as result
+which contains the subscription api.
 
 ```javascript
 bar = _e.on('foo/bar', function(){ /* ... */ })
 
-plah = _e.mod('foo/plah', function(plah){ /* ... */ })  // works also for groups
+plah = _e.mod('foo/plah', function(plah){ /* ... */ })  // works also for groups aka modules
 ```
 
 #### isPaused
@@ -108,7 +111,7 @@ plah.off()                     // plah.isPaused === true
 
 #### destroy()
 
-Destroy subscriber. No messages will be received in future. All properties will be removed.
+Destroy subscriber. No messages will be received in future. _All properties will be removed._
 
 ```javascript
 plah.destroy()
