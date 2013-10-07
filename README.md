@@ -63,7 +63,7 @@ _e.group('my/module/foo', function(foo) {
 
 ### Subscriber Parameters
 
-All message parameters will be passed on to the subscribers.
+All message parameters will be passed on to subscribers.
 
 ```javascript
 _e.on('foo/bar', function(a, b, c) { console.log('a:', a, 'b:', b, 'c:', c); })
@@ -75,34 +75,35 @@ _e.emit('foo/bar', 1, 2, 3);
 ### Subscriber API
 
 If a subscriber is created you will get an object
-which contains the subscriber API as result.
+which contains the subscriber api as result.
 
 ```javascript
 bar = _e.on('foo/bar', function(){ /* ... */ })
 
-// works also for groups
-plah = _e.group('foo/plah', { /* ... */ })
+plah = _e.group('foo/plah', { /* ... */ })  // works also for groups
 ```
 
-### isPaused
+#### isPaused
 
 Boolean property. Indicates if the subscriber is active (receives messages) or not.
 
 ```javascript
-console.log( plah.isPaused )   // => "true"
+console.log( plah.isPaused )   // => "false"
 ```
 
-### setPause(pause)
+#### setPause(pause)
 
-Enables/disables pause state for the subscriber.
+Enables/disables pause state.
 
 ```javascript
 plah.setPause(true)
+
+console.log( plah.isPaused )   // => "true"
 ```
 
-### destroy()
+#### destroy()
 
-Destroy the subscriber. No messages will be received in future.
+Destroy subscriber. No messages will be received in future. All properties will be removed.
 
 ```javascript
 plah.destroy()
