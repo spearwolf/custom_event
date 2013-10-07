@@ -61,7 +61,7 @@ _e.group('my/module/foo', function(foo) {
 ```
 
 
-### Subscriber Parameters
+### Message Parameters
 
 All message parameters will be passed on to subscribers.
 
@@ -85,7 +85,7 @@ plah = _e.group('foo/plah', { /* ... */ })  // works also for groups
 
 #### isPaused
 
-Boolean property. Indicates if the subscriber is active (receives messages) or not.
+Boolean property. Indicates if subscriber is active (receives messages) or not.
 
 ```javascript
 console.log( plah.isPaused )   // => "false"
