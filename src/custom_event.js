@@ -115,7 +115,8 @@
 
     // ___ custom_event core __________________________________________________
 
-    var g_rootNode;
+    var g_rootNode
+      , g_emitCallStack = 0;
 
     // ___ CustomEventError _______________________________________________ {{{
 
@@ -532,6 +533,14 @@
         };
 
         nodeAPI.emit = function(path) {
+            // beginCallStack {{{
+            if (g_emitCallStack !== -1) {
+                if (!g_emitCallStack) {
+                    g_emitCallStack = 1;
+                } else g_emitCallStack++;
+            }
+            // }}}
+
             var args = null;
             if (arguments.length > 1) {
                 args = Array.prototype.slice.call(arguments, 1);
@@ -541,6 +550,18 @@
                     listener.callAction(match.restPathItems, args);
                 });
             });
+
+            // endCallStack {{{
+            if (g_emitCallStack < 0) {
+                g_emitCallStack = 0;
+            } else {
+                if (g_emitCallStack) g_emitCallStack--;
+                if (!g_emitCallStack) {
+                    g_emitCallStack = -1;
+                    g_rootNode.emit('__CustomEventCallStackEnd__');
+                }
+            }
+            // }}}
         };
 
         return nodeAPI;
