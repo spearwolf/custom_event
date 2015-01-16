@@ -3,7 +3,7 @@
 // ============================================================
 //
 // Created at 2010/05/07
-// Copyright (c) 2010-2013 Wolfger Schramm <wolfger@spearwolf.de>
+// Copyright (c) 2010-2015 Wolfger Schramm <wolfger@spearwolf.de>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in

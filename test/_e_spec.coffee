@@ -11,8 +11,8 @@ describe "_e", ->
 
     describe "API", ->
 
-        it "eventize()" , -> _e.eventize.should.be.a "function"
-        it "topic()"    , -> _e.topic.should.be.a "function"
-        it "slot()"     , -> _e.slot.should.be.a "function"
+        it "eventize()" , -> _e.eventize.should.be.a.Function
+        it "topic()"    , -> _e.topic.should.be.a.Function
+        it "slot()"     , -> _e.slot.should.be.a.Function
 
 
