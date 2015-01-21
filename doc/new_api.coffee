@@ -7,8 +7,7 @@ obj.on "foo", callback    -> EventConnection            # DONE
 obj.once "foo", callback  -> EventConnection            # TODO
 
 obj.off "foo"                                           # TODO
-obj.off "foo", callback                                 # TODO
-EventConnection#off()                                   # TODO
+obj.off "foo", callback                                 # TODO ?
 
 _e.connect "foo", obj, otherObj   -> EventConnection    # DONE -> _e.eventize(obj).on(name, otherObj)
 obj.connect "foo", otherObj       -> EventConnection    # DONE -> obj.on("foo", _e.eventize(otherObj))
@@ -17,7 +16,9 @@ EventConnection#name     === "foo"                      # DONE
 EventConnection#sender   === obj                        # DONE
 EventConnection#receiver === otherObj                   # DONE
 EventConnection#pause    === false                      # DONE
-EventConnection#off()                                   # TODO
+EventConnection#destroy()                               # TODO
+
+EventSlot#destroy()                                     # TODO
 
 # global events
 

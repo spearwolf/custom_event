@@ -58,6 +58,7 @@
 
             obj.connect = function _eObjConnect(name, receiver) {
                 api.eventize(receiver);
+                if (this === receiver) return;
                 return this.on(name, receiver);
             };
 
@@ -73,6 +74,7 @@
 
         api.connect = function _eConnect(name, sender, receiver) {
             api.eventize(sender);
+            if (sender === receiver) return;
             return sender.on(name, receiver);
         };
 
@@ -247,7 +249,7 @@
 
             _definePublicPropertyRO(this, "name", name);
 
-            this.receiver = receiver;  // its important here to set receiver before sender!
+            this.receiver = receiver;  // its important here to set receiver before sender! (why(obsolete)?)
                                        // receiver is a CustomEventSlot
             this.sender   = sender;    // sender is an eventize(sender)'d object
             this.pause    = false;
