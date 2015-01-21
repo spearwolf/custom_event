@@ -37,10 +37,17 @@ module.exports = function(grunt) {
         },
 
         mochaTest: {
-            test: {
+            nyan: {
                 src: ['test/*.coffee'],
                 options: {
                     reporter: 'Nyan',  // spec
+                    require: 'coffee-script/register'
+                },
+            },
+            spec: {
+                src: ['test/*.coffee'],
+                options: {
+                    reporter: 'spec',
                     require: 'coffee-script/register'
                 },
             },
@@ -49,8 +56,8 @@ module.exports = function(grunt) {
     });
 
 
-    grunt.registerTask('test', ['mochaTest']);
-    grunt.registerTask('build', ['uglify', 'test']);
+    grunt.registerTask('test', ['mochaTest:spec']);
+    grunt.registerTask('build', ['uglify', 'mochaTest:nyan']);
     grunt.registerTask('default', ['build']);
 
 };

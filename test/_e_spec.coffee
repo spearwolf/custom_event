@@ -11,8 +11,17 @@ describe "_e", ->
 
     describe "API", ->
 
-        it "eventize()" , -> _e.eventize.should.be.a.Function
-        it "topic()"    , -> _e.topic.should.be.a.Function
-        it "slot()"     , -> _e.slot.should.be.a.Function
+        it ".eventize() exist" , -> _e.eventize.should.be.a.Function
+        it ".topic() exist"    , -> _e.topic.should.be.a.Function
+        it ".slot() exist"     , -> _e.slot.should.be.a.Function
 
+
+    describe "_e.eventize( obj )", ->
+
+        obj    = {}
+        resObj = _e.eventize( obj )
+
+        it "should return obj" , -> resObj.should.be.equal obj
+        it "obj.on() exist"    , -> obj.on.should.be.a.Function
+        it "obj.emit() exist"  , -> obj.emit.should.be.a.Function
 

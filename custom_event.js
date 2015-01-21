@@ -57,7 +57,7 @@
                 if (typeof name === "string") {
                     for (i = 0; i < len; i++) {
                         connect = this._e.connections[i];
-                        if (connect.name === name) {
+                        if (!connect.pause && connect.name === name && !connect.receiver.pause) {
                             connect.receiver.signal(name, args, globalCtx || this);
                         }
                     }
@@ -73,14 +73,34 @@
         api.topic = function _eTopic(name) {
             var topic = api._topics[name];
             if (typeof topic !== "object") {
-                topic = Object.create(null);
-                api.eventize(topic);
+                //topic = Object.create(null);
+                //api.eventize(topic);
+                //_definePublicPropertyRO(topic, "name", name);
+                topic = new CustomEventTopic(name);
                 api._topics[name] = topic;
             }
             return topic;
         };
+        function CustomEventTopic(name) {
+            _definePublicPropertyRO(this, "name", name);
+            this.pause = false;
+            api.eventize(this);
+        }
+        Object.defineProperties(CustomEventTopic.prototype, {
+            pause: {
+                enumerable: true,
+                get: function() {
+                    return this._pause;
+                },
+                set: function(pause) {
+                    this._pause = !!pause;
+                }
+            }
+        });
         function CustomEventSlot(obj, prop) {
+            this.pause = false;
             _definePublicPropertyRO(this, "obj", obj);
+            _defineHiddenPropertyRO(this, "isTopic", obj instanceof CustomEventTopic);
             if (obj instanceof CustomEventConnection) {
                 prop = "pipe";
             }
@@ -140,14 +160,34 @@
                 };
             }
         }
+        Object.defineProperties(CustomEventSlot.prototype, {
+            pause: {
+                enumerable: true,
+                get: function() {
+                    if (this.isTopic) {
+                        return this._pause || this.obj.pause;
+                    } else {
+                        return this._pause;
+                    }
+                },
+                set: function(pause) {
+                    this._pause = !!pause;
+                }
+            }
+        });
         function CustomEventConnection(name, sender, receiver) {
             _definePublicPropertyRO(this, "name", name);
             this.receiver = receiver;
             // its important here to set receiver before sender!
+            // receiver is a CustomEventSlot
             this.sender = sender;
+            // sender is an eventize(sender)'d object
+            this.pause = false;
         }
         CustomEventConnection.prototype.pipe = function _eCustomEventConnection_pipe(name, args) {
-            this._receiver.signal(name, args);
+            if (!this.pause) {
+                this._receiver.signal(name, args);
+            }
         };
         Object.defineProperties(CustomEventConnection.prototype, {
             receiver: {
@@ -170,10 +210,21 @@
                     if (sender != null) {
                         api.eventize(sender);
                         if (prevSender !== sender) {
-                            if (prevSender != null) _unbind(this, prevSender, this._receiver);
-                            _bind(this, sender, this._receiver);
+                            if (prevSender != null) _unbind(this, prevSender);
+                            _bind(this, sender);
                         }
+                    } else if (prevSender != null) {
+                        _unbind(this, prevSender);
                     }
+                }
+            },
+            pause: {
+                enumerable: true,
+                get: function() {
+                    return this._pause;
+                },
+                set: function(pause) {
+                    this._pause = !!pause;
                 }
             }
         });
@@ -184,14 +235,14 @@
             return -1;
         }
         function _bind(eventConnection, obj) {
-            // assumes that obj is eventized
-            if (_indexOfConnectionTarget(obj._e.connections, eventConnection) === -1) {
+            // obj should be eventized
+            if (obj._e && _indexOfConnectionTarget(obj._e.connections, eventConnection) === -1) {
                 obj._e.connections.push(eventConnection);
             }
         }
         function _unbind(eventConnection, obj) {
-            // assumes that obj is eventized
-            if (Array.isArray(obj._e.connections)) {
+            // obj should be eventized
+            if (obj._e && Array.isArray(obj._e.connections)) {
                 var i = _indexOfConnectionTarget(obj._e.connections, eventConnection);
                 if (i >= 0) obj._e.connections.splice(i, 1);
             }

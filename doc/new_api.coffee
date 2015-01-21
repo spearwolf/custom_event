@@ -1,35 +1,36 @@
 
-_e.eventize( obj )
+_e.eventize( obj )                                      # DONE
 
-obj.emit "foo"  # -> call .on "foo"
+obj.emit "foo"  # -> call .on "foo"                     # DONE
 
-obj.on "foo", callback    -> EventConnection
-obj.once "foo", callback  -> EventConnection
+obj.on "foo", callback    -> EventConnection            # DONE
+obj.once "foo", callback  -> EventConnection            # TODO
 
-obj.off "foo"
-obj.off "foo", callback
-EventConnection#off()
+obj.off "foo"                                           # TODO
+obj.off "foo", callback                                 # TODO
+EventConnection#off()                                   # TODO
 
-_e.connect "foo", obj, otherObj   -> EventConnection
-obj.connect "foo", otherObj
+_e.connect "foo", obj, otherObj   -> EventConnection    # TODO
+obj.connect "foo", otherObj                             # TODO -> obj.on("foo", _e.slot(_e.eventize(otherObj)))
 
-EventConnection#name     === "foo"
-EventConnection#sender   === obj
-EventConnection#receiver === otherObj
-EventConnection#pause    === false
-EventConnection#off()
+EventConnection#name     === "foo"                      # DONE
+EventConnection#sender   === obj                        # DONE
+EventConnection#receiver === otherObj                   # DONE
+EventConnection#pause    === false                      # DONE
+EventConnection#off()                                   # TODO
 
 # global events
 
-_e.topic('bar')  -> EventTopic
+_e.topic('bar')  -> EventTopic                          # DONE
 
-EventTopic#name === 'bar'
-EventTopic#destroy()
+EventTopic#name === 'bar'                               # DONE
+EventTopic#pause                                        # DONE
+EventTopic#destroy()                                    # TODO
 
 
-_e.emit "globalFoo"
-_e.topic('bar').emit "globalFoo"
+_e.emit "globalFoo"                                     # TODO ?allow-globalEvents?
+_e.topic('bar').emit "globalFoo"                        # DONE
 
-_e.on "globalFoo", callback
-_e.topic('bar').on "globalFoo"
+_e.on "globalFoo", callback                             # TODO ?allow-globalEvents?
+_e.topic('bar').on "globalFoo"                          # DONE
 

@@ -1,5 +1,5 @@
 var Benchmark = require('benchmark')
-  , _e = require('./custom_event-min')
+  , _e = require('./custom_event')
   ;
 
 var suite = new Benchmark.Suite();
