@@ -10,8 +10,8 @@ obj.off "foo"                                           # TODO
 obj.off "foo", callback                                 # TODO
 EventConnection#off()                                   # TODO
 
-_e.connect "foo", obj, otherObj   -> EventConnection    # TODO
-obj.connect "foo", otherObj                             # TODO -> obj.on("foo", _e.slot(_e.eventize(otherObj)))
+_e.connect "foo", obj, otherObj   -> EventConnection    # DONE -> _e.eventize(obj).on(name, otherObj)
+obj.connect "foo", otherObj       -> EventConnection    # DONE -> obj.on("foo", _e.eventize(otherObj))
 
 EventConnection#name     === "foo"                      # DONE
 EventConnection#sender   === obj                        # DONE
@@ -28,9 +28,9 @@ EventTopic#pause                                        # DONE
 EventTopic#destroy()                                    # TODO
 
 
-_e.emit "globalFoo"                                     # TODO ?allow-globalEvents?
+_e.emit "globalFoo"                                     # TODO -> _e.topic(<global>).emit("globalFoo")
 _e.topic('bar').emit "globalFoo"                        # DONE
 
-_e.on "globalFoo", callback                             # TODO ?allow-globalEvents?
+_e.on "globalFoo", callback                             # TODO -> _e.topic(<global>).on("globalFoo", callback)
 _e.topic('bar').on "globalFoo"                          # DONE
 

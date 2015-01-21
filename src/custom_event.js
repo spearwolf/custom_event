@@ -56,6 +56,11 @@
 
             };
 
+            obj.connect = function _eObjConnect(name, receiver) {
+                api.eventize(receiver);
+                return this.on(name, receiver);
+            };
+
             return obj;
 
         };  // eventize()
@@ -63,6 +68,12 @@
 
         api.slot = function _eSlot(obj, propName) {
             return new CustomEventSlot(obj, propName);
+        };
+
+
+        api.connect = function _eConnect(name, sender, receiver) {
+            api.eventize(sender);
+            return sender.on(name, receiver);
         };
 
 

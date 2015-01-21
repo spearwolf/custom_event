@@ -56,7 +56,7 @@ module.exports = function(grunt) {
     });
 
 
-    grunt.registerTask('test', ['mochaTest:spec']);
+    grunt.registerTask('test', ['uglify', 'mochaTest:spec']);
     grunt.registerTask('build', ['uglify', 'mochaTest:nyan']);
     grunt.registerTask('default', ['build']);
 
