@@ -24,6 +24,7 @@
 //
 (function(_global) {
     "use strict";
+    // module.exports, commonjs, amd ---------------------------------------------------- {{{
     var _exports;
     if (typeof exports === "undefined") {
         if (typeof define === "function" && typeof define.amd === "object" && define.amd) {
@@ -38,8 +39,10 @@
     } else {
         _exports = exports;
     }
+    // ---------------------------------------------------------------------------------- }}}
     (function(api) {
         _definePublicPropertyRO(api, "VERSION", "0.9.0");
+        // eventize( obj ) ------------------------------------------------------------------ {{{
         api.eventize = function _eEventize(obj, globalCtx) {
             if ("object" === typeof obj._e) return;
             _defineHiddenPropertyRO(obj, "_e", Object.create(null));
@@ -65,30 +68,47 @@
             };
             obj.connect = function _eObjConnect(name, receiver) {
                 api.eventize(receiver);
+                if (this === receiver) return;
                 return this.on(name, receiver);
             };
             return obj;
         };
-        // eventize()
+        // end of eventize()
+        // ---------------------------------------------------------------------------------- }}}
         api.slot = function _eSlot(obj, propName) {
             return new CustomEventSlot(obj, propName);
         };
-        api.connect = function _eConnect(name, sender, receiver) {
-            api.eventize(sender);
-            return sender.on(name, receiver);
-        };
         _defineHiddenPropertyRO(api, "_topics", Object.create(null));
         api.topic = function _eTopic(name) {
+            if (name == null) {
+                name = "_e";
+            }
             var topic = api._topics[name];
             if (typeof topic !== "object") {
-                //topic = Object.create(null);
-                //api.eventize(topic);
-                //_definePublicPropertyRO(topic, "name", name);
                 topic = new CustomEventTopic(name);
                 api._topics[name] = topic;
             }
             return topic;
         };
+        api.emit = function() {
+            var global_topic = api.topic();
+            global_topic.emit.apply(global_topic, arguments);
+        };
+        api.on = function() {
+            var global_topic = api.topic();
+            global_topic.on.apply(global_topic, arguments);
+        };
+        api.connect = function _eConnect(name, sender, receiver) {
+            if (arguments.length === 2) {
+                var global_topic = api.topic();
+                return global_topic.connect(name, sender);
+            } else {
+                api.eventize(sender);
+                if (sender === receiver) return;
+                return sender.on(name, receiver);
+            }
+        };
+        // CustomEventTopic ----------------------------------------------------------------- {{{
         function CustomEventTopic(name) {
             _definePublicPropertyRO(this, "name", name);
             this.pause = false;
@@ -105,6 +125,8 @@
                 }
             }
         });
+        // ---------------------------------------------------------------------------------- }}}
+        // CustomEventSlot ------------------------------------------------------------------ {{{
         function CustomEventSlot(obj, prop) {
             this.pause = false;
             _definePublicPropertyRO(this, "obj", obj);
@@ -183,10 +205,12 @@
                 }
             }
         });
+        // ---------------------------------------------------------------------------------- }}}
+        // CustomEventConnection ------------------------------------------------------------ {{{
         function CustomEventConnection(name, sender, receiver) {
             _definePublicPropertyRO(this, "name", name);
             this.receiver = receiver;
-            // its important here to set receiver before sender!
+            // its important here to set receiver before sender! (why(obsolete)?)
             // receiver is a CustomEventSlot
             this.sender = sender;
             // sender is an eventize(sender)'d object
@@ -236,6 +260,8 @@
                 }
             }
         });
+        // ---------------------------------------------------------------------------------- }}}
+        // private helpers ------------------------------------------------------------------ {{{
         function _indexOfConnectionTarget(arr, ec) {
             for (var i = arr.length; i--; ) {
                 if (ec.name === arr[i].name && ec.receiver.equals(arr[i].receiver)) return i;

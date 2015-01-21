@@ -29,9 +29,9 @@ EventTopic#pause                                        # DONE
 EventTopic#destroy()                                    # TODO
 
 
-_e.emit "globalFoo"                                     # TODO -> _e.topic(<global>).emit("globalFoo")
+_e.emit "globalFoo"                                     # DONE -> _e.topic(<global>).emit("globalFoo")
 _e.topic('bar').emit "globalFoo"                        # DONE
 
-_e.on "globalFoo", callback                             # TODO -> _e.topic(<global>).on("globalFoo", callback)
+_e.on "globalFoo", callback                             # DONE -> _e.topic(<global>).on("globalFoo", callback)
 _e.topic('bar').on "globalFoo"                          # DONE
 

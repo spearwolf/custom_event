@@ -15,6 +15,8 @@ describe "_e", ->
         it ".topic() exist"    , -> _e.topic.should.be.a.Function
         it ".slot() exist"     , -> _e.slot.should.be.a.Function
         it ".connect() exist"  , -> _e.connect.should.be.a.Function
+        it ".emit() exist"     , -> _e.emit.should.be.a.Function
+        it ".on() exist"       , -> _e.on.should.be.a.Function
 
 
     describe "_e.eventize( obj ) -> eventizedObj", ->

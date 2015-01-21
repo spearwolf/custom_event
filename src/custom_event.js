@@ -1,6 +1,8 @@
 (function(_global) {
     "use strict";
 
+    // module.exports, commonjs, amd ---------------------------------------------------- {{{
+
     var _exports;
     if (typeof exports === 'undefined') {
         if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
@@ -15,10 +17,13 @@
         _exports = exports;  // commonjs
     }
 
+    // ---------------------------------------------------------------------------------- }}}
+
     (function(api) {
 
         _definePublicPropertyRO(api, 'VERSION', "0.9.0");
 
+        // eventize( obj ) ------------------------------------------------------------------ {{{
 
         api.eventize = function _eEventize(obj, globalCtx) {
 
@@ -64,7 +69,9 @@
 
             return obj;
 
-        };  // eventize()
+        };  // end of eventize()
+
+        // ---------------------------------------------------------------------------------- }}}
 
 
         api.slot = function _eSlot(obj, propName) {
@@ -72,23 +79,17 @@
         };
 
 
-        api.connect = function _eConnect(name, sender, receiver) {
-            api.eventize(sender);
-            if (sender === receiver) return;
-            return sender.on(name, receiver);
-        };
-
-
         _defineHiddenPropertyRO(api, "_topics", Object.create(null));
 
         api.topic = function _eTopic(name) {
 
+            if (name == null) {
+                name = "_e";  // global topic
+            }
+
             var topic = api._topics[name];
 
             if (typeof topic !== 'object') {
-                //topic = Object.create(null);
-                //api.eventize(topic);
-                //_definePublicPropertyRO(topic, "name", name);
 
                 topic = new CustomEventTopic(name);
 
@@ -98,6 +99,36 @@
             return topic;
         };
 
+
+        api.emit = function() {
+            var global_topic = api.topic();
+            global_topic.emit.apply(global_topic, arguments);
+        };
+
+
+        api.on = function() {
+            var global_topic = api.topic();
+            global_topic.on.apply(global_topic, arguments);
+        };
+
+
+        api.connect = function _eConnect(name, sender, receiver) {
+            if (arguments.length === 2) {
+
+                var global_topic = api.topic();
+                return global_topic.connect(name, sender);
+
+            } else {
+
+                api.eventize(sender);
+                if (sender === receiver) return;
+                return sender.on(name, receiver);
+
+            }
+        };
+
+
+        // CustomEventTopic ----------------------------------------------------------------- {{{
 
         function CustomEventTopic(name) {
 
@@ -122,6 +153,9 @@
             }
         });
 
+        // ---------------------------------------------------------------------------------- }}}
+
+        // CustomEventSlot ------------------------------------------------------------------ {{{
 
         function CustomEventSlot(obj, prop) {
 
@@ -243,7 +277,9 @@
             }
         });
 
+        // ---------------------------------------------------------------------------------- }}}
 
+        // CustomEventConnection ------------------------------------------------------------ {{{
 
         function CustomEventConnection(name, sender, receiver) {
 
@@ -309,7 +345,9 @@
 
         });
 
+        // ---------------------------------------------------------------------------------- }}}
 
+        // private helpers ------------------------------------------------------------------ {{{
 
         function _indexOfConnectionTarget(arr, ec) {
             for (var i = arr.length; i--;) {
@@ -355,6 +393,7 @@
             });
         }
 
+        // ---------------------------------------------------------------------------------- }}}
 
     })(_exports);
 
