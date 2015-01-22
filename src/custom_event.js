@@ -27,7 +27,7 @@
 
         api.eventize = function _eEventize(obj, globalCtx) {
 
-            if ('object' === typeof obj._e) return;
+            if ('object' === typeof obj._e) return obj;
 
             _defineHiddenPropertyRO(obj, "_e", Object.create(null));
             obj._e.connections = [];
@@ -53,8 +53,8 @@
                 if (typeof name === 'string') {
                     for (i = 0; i < len; i++) {
                         connect = this._e.connections[i];
-                        if (!connect.pause && connect.name === name && !connect.receiver.pause) {
-                            connect.receiver.signal(name, args, globalCtx || this);
+                        if (connect && connect.name === name) {
+                            connect.pipe(name, args, globalCtx || this);
                         }
                     }
                 }
@@ -62,10 +62,40 @@
             };
 
             obj.connect = function _eObjConnect(name, receiver) {
+
+                if (this === receiver) {
+                    throw new CustomEventError("can't connect object with oneself!");
+                }
+
                 api.eventize(receiver);
-                if (this === receiver) return;
+
                 return this.on(name, receiver);
             };
+
+
+            if (obj instanceof CustomEventSlot) {
+
+                // eventize a slot
+
+                _defineHiddenPropertyRO(obj, "_signal", obj.signal);
+                _definePublicPropertyRO(obj, "signal", function(name, args, ctx) {
+                    this._signal(name, args, ctx);
+                    this.emit("signal", this, name, args, ctx);
+                });
+
+            } else if (obj instanceof CustomEventConnection) {
+
+                // eventize a connection
+
+                _defineHiddenPropertyRO(obj, "_pipe", obj.pipe);
+                _definePublicPropertyRO(obj, "pipe", function(name, args) {
+                    this._pipe(name, args);
+                    if (!this._pause) {
+                        this.emit("pipe", this, name, args);
+                    }
+                });
+
+            }
 
             return obj;
 
@@ -74,8 +104,9 @@
         // ---------------------------------------------------------------------------------- }}}
 
 
-        api.slot = function _eSlot(obj, propName) {
-            return new CustomEventSlot(obj, propName);
+        api.slot = function _eSlot(obj, propName, eventize) {
+            var slot = new CustomEventSlot(obj, propName);
+            return eventize ? api.eventize(slot) : slot;
         };
 
 
@@ -120,8 +151,12 @@
 
             } else {
 
+                if (sender === receiver) {
+                    throw new CustomEventError("can't connect object with oneself!");
+                }
+
                 api.eventize(sender);
-                if (sender === receiver) return;
+
                 return sender.on(name, receiver);
 
             }
@@ -148,7 +183,7 @@
                 get: function() { return this._pause; },
 
                 set: function(pause) {
-                    this._pause = !!pause;                
+                    _definePublicPropertyRO(this, 'pause', !!pause);
                 }
             }
         });
@@ -159,10 +194,15 @@
 
         function CustomEventSlot(obj, prop) {
 
+            //api.eventize(this);
+
             this.pause = false;
 
-            _definePublicPropertyRO(this, 'obj', obj);
-            _defineHiddenPropertyRO(this, 'isTopic', (obj instanceof CustomEventTopic));
+            _definePublicPropertiesRO(this, {
+                object      : obj,
+                isDestroyed : false,
+                isTopic     : (obj instanceof CustomEventTopic)
+            });
 
             if (obj instanceof CustomEventConnection) {
                 prop = "pipe";
@@ -175,11 +215,12 @@
                     isFunction: true,
 
                     signal: function _eCustomEventSlot_functionSignal(name, args, ctx) {
-                        this.obj.apply(ctx, args);
+                        this.object.apply(ctx, args);
+                        //if (typeof this.emit === 'function') this.emit("signal", name, args, ctx);
                     },
 
                     equals: function _eCustomEventSlot_functionEquals(other) {
-                        return other === this || ( other.obj === this.obj && other.isFunction === true );
+                        return other === this || ( other.object === this.object && other.isFunction === true );
                     }
 
                 });
@@ -194,12 +235,12 @@
 
                     _definePublicPropertiesRO(this, {
 
-                        prop: "emit",
+                        property: "emit",
 
                         signal: function _eCustomEventSlot_emitSignal(name, args) {
-                            var _prop = this.obj[this.prop];
+                            var _prop = this.object[this.property];
                             if ('function' === typeof _prop) {
-                                _prop.apply(this.obj, [name].concat(args));
+                                _prop.apply(this.object, [name].concat(args));
                             }
                         }
 
@@ -209,10 +250,10 @@
 
                     _definePublicPropertiesRO(this, {
 
-                        prop: "pipe",
+                        property: "pipe",
 
                         signal: function _eCustomEventSlot_pipeSignal(name, args) {
-                            this.obj.pipe(name, args);
+                            this.object.pipe(name, args);
                         }
 
                     });
@@ -221,12 +262,12 @@
 
                     _definePublicPropertiesRO(this, {
 
-                        prop: "signal",
+                        property: "signal",
 
                         signal: function _eCustomEventSlot_signalSignal(name, args) {
-                            var _prop = this.obj[this.prop];
+                            var _prop = this.object[this.property];
                             if ('function' === typeof _prop) {
-                                _prop.call(this.obj, [name].concat(args));
+                                _prop.call(this.object, [name].concat(args));
                             }
                         }
 
@@ -236,12 +277,12 @@
 
                     _definePublicPropertiesRO(this, {
 
-                        prop: prop,
+                        property: prop,
 
                         signal: function _eCustomEventSlot_signal(name, args) {
-                            var _prop = this.obj[this.prop];
+                            var _prop = this.object[this.property];
                             if ('function' === typeof _prop) {
-                                _prop.apply(this.obj, args);
+                                _prop.apply(this.object, args);
                             }
                         }
 
@@ -251,11 +292,29 @@
 
 
                 this.equals = function _eCustomEventSlot_equals(other) {
-                    return other === this || ( other.obj === this.obj && other.prop === this.prop );
+                    return other === this || ( other.object === this.object && other.property === this.property );
                 };
 
             }
         }
+
+
+        CustomEventSlot.prototype.destroy = function _eCustomEventSlot_destroy() {
+
+            this.pause = true;
+
+            _definePublicPropertiesRO(this, {
+
+                isDestroyed : true,
+                signal      : function(){},
+                equals      : function() { return false; }
+
+            });
+
+            delete this.object;
+            delete this._signal;
+        };
+
 
         Object.defineProperties(CustomEventSlot.prototype, {
 
@@ -265,14 +324,14 @@
 
                 get: function() {
                     if (this.isTopic) {
-                        return this._pause || this.obj.pause;
+                        return this._pause || (this.object && this.object.pause);
                     } else {
                         return this._pause;
                     }
                 },
 
                 set: function(pause) {
-                    this._pause = !!pause;                
+                    _defineHiddenPropertyRO(this, "_pause", !!pause);
                 }
             }
         });
@@ -291,11 +350,20 @@
             this.pause    = false;
         }
 
-        CustomEventConnection.prototype.pipe = function _eCustomEventConnection_pipe(name, args) {
-            if (!this.pause) {
-                this._receiver.signal(name, args);
+        CustomEventConnection.prototype.pipe = function _eCustomEventConnection_pipe(name, args, ctx) {
+            if (!this.pause && this._receiver != null) {
+                if (this._receiver.isDestroyed) {
+                    this.receiver = null;
+                } else {
+                    this._receiver.signal(name, args, ctx);
+                }
             }
         };
+
+        CustomEventConnection.prototype.eventize = function _eCustomEventConnection_eventize() {
+            return api.eventize(this);
+        };
+
 
         Object.defineProperties(CustomEventConnection.prototype, {
 
@@ -306,8 +374,13 @@
                 get: function() { return this._receiver; },
 
                 set: function(receiver) {
-                    _defineHiddenPropertyRO(this, '_receiver',
-                        (receiver instanceof CustomEventSlot ? receiver : new CustomEventSlot(receiver)) );
+
+                    _defineHiddenPropertyRO(this, '_receiver', (receiver == null ? null :
+                        (receiver instanceof CustomEventSlot ? receiver : new CustomEventSlot(receiver))));
+
+                    if (this._receiver != null && this._receiver.isDestroyed) {
+                        throw new CustomEventError("can't create a connection to destroyed slot (receiver)!");
+                    }
                 }
             },
 
@@ -339,7 +412,7 @@
                 get: function() { return this._pause; },
 
                 set: function(pause) {
-                    this._pause = !!pause;                
+                    _defineHiddenPropertyRO(this, '_pause', !!pause);
                 }
             }
 
@@ -347,24 +420,39 @@
 
         // ---------------------------------------------------------------------------------- }}}
 
+        // CustomEventError ----------------------------------------------------------------- {{{
+
+        function CustomEventError(message) {
+            this.name    = "CustomEventError";
+            this.message = message;
+        }
+
+        CustomEventError.prototype = new Error();
+        CustomEventError.prototype.constructor = CustomEventError;
+
+        // ---------------------------------------------------------------------------------- }}}
+
+
         // private helpers ------------------------------------------------------------------ {{{
 
         function _indexOfConnectionTarget(arr, ec) {
-            for (var i = arr.length; i--;) {
-                if (ec.name === arr[i].name && ec.receiver.equals(arr[i].receiver)) return i;
+            if (arr && ec && ec.receiver) {
+                for (var i = arr.length; i--;) {
+                    if (ec.name === arr[i].name && ec.receiver.equals(arr[i].receiver)) return i;
+                }
             }
             return -1;
         }
 
 
         function _bind(eventConnection, obj) { // obj should be eventized
-            if (obj._e && _indexOfConnectionTarget(obj._e.connections, eventConnection) === -1) {
+            if (obj && obj._e && _indexOfConnectionTarget(obj._e.connections, eventConnection) === -1) {
                 obj._e.connections.push(eventConnection);
             }
         }
 
         function _unbind(eventConnection, obj) { // obj should be eventized
-            if (obj._e && Array.isArray(obj._e.connections)) {
+            if (obj && obj._e && Array.isArray(obj._e.connections)) {
                 var i = _indexOfConnectionTarget(obj._e.connections, eventConnection);
                 if (i >= 0) obj._e.connections.splice(i, 1);
             }

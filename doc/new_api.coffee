@@ -18,7 +18,7 @@ EventConnection#receiver === otherObj                   # DONE
 EventConnection#pause    === false                      # DONE
 EventConnection#destroy()                               # TODO
 
-EventSlot#destroy()                                     # TODO
+EventSlot#destroy()                                     # DONE
 
 # global events
 
