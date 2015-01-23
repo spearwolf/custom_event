@@ -23,7 +23,7 @@
 
         _definePublicPropertyRO(api, 'VERSION', "0.9.0");
 
-        // eventize( obj ) ------------------------------------------------------------------ {{{
+        // _e.eventize( obj ) =============================================================== {{{
 
         api.eventize = function _eEventize(obj, globalCtx) {
 
@@ -32,6 +32,7 @@
             _defineHiddenPropertyRO(obj, "_e", Object.create(null));
             obj._e.connections = [];
 
+            // obj.on( name, receiver ) ----------------------------------------------------------- {{{
 
             obj.on = function _eOn(name, slot) {
 
@@ -41,6 +42,9 @@
 
             };
 
+            // ------------------------------------------------------------------------------------ }}}
+
+            // obj.emit( name [, args... ] ) ------------------------------------------------------ {{{
 
             obj.emit = function _eEmit() {
 
@@ -61,6 +65,10 @@
 
             };
 
+            // ------------------------------------------------------------------------------------ }}}
+
+            // obj.connect( name, receiver ) ------------------------------------------------------ {{{
+
             obj.connect = function _eObjConnect(name, receiver) {
 
                 if (this === receiver) {
@@ -72,6 +80,9 @@
                 return this.on(name, receiver);
             };
 
+            // ------------------------------------------------------------------------------------ }}}
+
+            // special eventizations -------------------------------------------------------------- {{{
 
             if (obj instanceof CustomEventSlot) {
 
@@ -97,18 +108,24 @@
 
             }
 
+            // ------------------------------------------------------------------------------------ }}}
+
             return obj;
 
-        };  // end of eventize()
+        };
 
-        // ---------------------------------------------------------------------------------- }}}
+        // ================================================================================== }}}
 
+        // _e.slot( object [, property [, eventize= false ] ) ------------------------------- {{{
 
         api.slot = function _eSlot(obj, propName, eventize) {
             var slot = new CustomEventSlot(obj, propName);
             return eventize ? api.eventize(slot) : slot;
         };
 
+        // ---------------------------------------------------------------------------------- }}}
+
+        // _e.topic( name ) ----------------------------------------------------------------- {{{
 
         _defineHiddenPropertyRO(api, "_topics", Object.create(null));
 
@@ -130,20 +147,30 @@
             return topic;
         };
 
+        // ---------------------------------------------------------------------------------- }}}
+
+        // _e.emit( name [, args... ] ) ----------------------------------------------------- {{{
 
         api.emit = function() {
             var global_topic = api.topic();
             global_topic.emit.apply(global_topic, arguments);
         };
 
+        // ---------------------------------------------------------------------------------- }}}
+
+        // _e.on( name, receiver ) ---------------------------------------------------------- {{{
 
         api.on = function() {
             var global_topic = api.topic();
             global_topic.on.apply(global_topic, arguments);
         };
 
+        // ---------------------------------------------------------------------------------- }}}
+
+        // _e.connect( name, [ sender, ] receiver ) ----------------------------------------- {{{
 
         api.connect = function _eConnect(name, sender, receiver) {
+
             if (arguments.length === 2) {
 
                 var global_topic = api.topic();
@@ -162,6 +189,10 @@
             }
         };
 
+        // ---------------------------------------------------------------------------------- }}}
+
+
+        // internal class definitions ======================================================= {{{
 
         // CustomEventTopic ----------------------------------------------------------------- {{{
 
@@ -216,7 +247,6 @@
 
                     signal: function _eCustomEventSlot_functionSignal(name, args, ctx) {
                         this.object.apply(ctx, args);
-                        //if (typeof this.emit === 'function') this.emit("signal", name, args, ctx);
                     },
 
                     equals: function _eCustomEventSlot_functionEquals(other) {
@@ -432,6 +462,7 @@
 
         // ---------------------------------------------------------------------------------- }}}
 
+        // ================================================================================== }}}
 
         // private helpers ------------------------------------------------------------------ {{{
 
