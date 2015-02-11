@@ -1,3 +1,6 @@
+/* globals define */
+"use 6to5";
+
 (function(_global) {
     "use strict";
 
@@ -21,474 +24,190 @@
 
     (function(api) {
 
-        _definePublicPropertyRO(api, 'VERSION', "0.9.0");
+        _definePublicPropertyRO(api, 'VERSION', "0.10.0");
 
-        // _e.eventize( obj ) =============================================================== {{{
 
-        api.eventize = function _eEventize(obj, globalCtx) {
+        api.eventize = function _eEventize(obj) {
 
             if ('object' === typeof obj._e) return obj;
 
-            _defineHiddenPropertyRO(obj, "_e", Object.create(null));
-            obj._e.connections = [];
+            _defineHiddenPropertyRO(obj, "_e", _createCustomEventMetaInfo());
 
-            // obj.on( name, receiver ) ----------------------------------------------------------- {{{
 
-            obj.on = function _eOn(name, slot) {
-
-                if (typeof name === 'string' && name.length > 0 && typeof slot !== 'undefined') {
-                    return new CustomEventConnection(name, this, slot);
-                }
-
+            obj.getSlot = function _eGetSlot(name) {
+                return this._e.slots.get(name);
             };
 
-            // ------------------------------------------------------------------------------------ }}}
 
-            // obj.emit( name [, args... ] ) ------------------------------------------------------ {{{
+            obj.freezeSlots = function _eFreezeSlots() {
+                this._e.slotsFreezed = true;
+                return this;
+            };
+
+
+            obj.unfreezeSlots = function _eUnfreezeSlots() {
+                this._e.slotsFreezed = false;
+                return this;
+            };
+
+
+            obj.defineSlot = function _eDefineSlot(name) {
+                if (!this._e.slots.has(name)) {
+                    if (!this._e.slotsFreezed) {
+                        this._e.slots.set(name, new CustomEventSlot(this, name));
+                    } else {
+                        throw new CustomEventError(`unknown slot: ${name}`);
+                    }
+                }
+                return this._e.slots.get(name);
+            };
+
+
+            obj.defineSlots = function _eDefineSlots() {
+                for (var i = arguments.length; i--;) {
+                    if (Array.isArray(arguments[i])) {
+                        this.defineSlots(arguments[i]);
+                    } else {
+                        this.defineSlot(arguments[i]);
+                    }
+                }
+                return this;
+            };
+
+
+            obj.on = function _eOn(name, receiver) {
+                this.defineSlot(name).addEventListener(receiver);
+                return this;
+            };
+
 
             obj.emit = function _eEmit() {
-
-                var len  = this._e.connections.length;
-                var name = arguments[0];
-                var args = Array.prototype.slice.call(arguments, 1);
-
-                var connect, i;
-
-                if (typeof name === 'string') {
-                    for (i = 0; i < len; i++) {
-                        connect = this._e.connections[i];
-                        if (connect && connect.name === name) {
-                            connect.pipe(name, args, globalCtx || this);
-                        }
-                    }
+                var args = Array.prototype.splice.call(arguments, 0);
+                var name = args.shift();
+                if (this._e.slots.has(name)) {
+                    this._e.slots.get(name).signal(args);
                 }
-
             };
 
-            // ------------------------------------------------------------------------------------ }}}
 
-            // obj.connect( name, receiver ) ------------------------------------------------------ {{{
-
-            obj.connect = function _eObjConnect(name, receiver) {
-
-                if (this === receiver) {
-                    throw new CustomEventError("can't connect object with oneself!");
+            obj.off = function _eOff(receiver) {
+                this._e.slots.forEach(function(slot) {
+                    slot.removeEventListener(receiver);
+                });
+                if (typeof receiver === 'string' && this._e.slots.has(receiver)) {
+                    this._e.slots.get(receiver).removeAllEventListeners();
                 }
-
-                api.eventize(receiver);
-
-                return this.on(name, receiver);
+                return this;
             };
 
-            // ------------------------------------------------------------------------------------ }}}
 
-            // special eventizations -------------------------------------------------------------- {{{
+            obj.connect = function _eConnect(name, receiver, slot) {
+                // TODO create proxy slot
+                this.on(name, api.eventize(receiver).defineSlot(slot));
+                return this;
+            };
 
-            if (obj instanceof CustomEventSlot) {
-
-                // eventize a slot
-
-                _defineHiddenPropertyRO(obj, "_signal", obj.signal);
-                _definePublicPropertyRO(obj, "signal", function(name, args, ctx) {
-                    this._signal(name, args, ctx);
-                    this.emit("signal", this, name, args, ctx);
-                });
-
-            } else if (obj instanceof CustomEventConnection) {
-
-                // eventize a connection
-
-                _defineHiddenPropertyRO(obj, "_pipe", obj.pipe);
-                _definePublicPropertyRO(obj, "pipe", function(name, args) {
-                    this._pipe(name, args);
-                    if (!this._pause) {
-                        this.emit("pipe", this, name, args);
-                    }
-                });
-
-            }
-
-            // ------------------------------------------------------------------------------------ }}}
 
             return obj;
-
         };
 
-        // ================================================================================== }}}
 
-        // _e.slot( object [, property [, eventize= false ] ) ------------------------------- {{{
 
-        api.slot = function _eSlot(obj, propName, eventize) {
-            var slot = new CustomEventSlot(obj, propName);
-            return eventize ? api.eventize(slot) : slot;
-        };
+        function CustomEventSlot(owner, name) {
 
-        // ---------------------------------------------------------------------------------- }}}
-
-        // _e.topic( name ) ----------------------------------------------------------------- {{{
-
-        _defineHiddenPropertyRO(api, "_topics", Object.create(null));
-
-        api.topic = function _eTopic(name) {
-
-            if (name == null) {
-                name = "_e";  // global topic
+            if (typeof owner !== 'object') {
+                throw new CustomEventError('CustomEventSlot(owner, name) constructor: insists on object value as :owner parameter, but is ' + (typeof object));
             }
 
-            var topic = api._topics[name];
-
-            if (typeof topic !== 'object') {
-
-                topic = new CustomEventTopic(name);
-
-                api._topics[name] = topic;
+            if (typeof name !== 'string') {
+                throw new CustomEventError('CustomEventSlot(owner, name) constructor: insists on string value as :name parameter, but is ' + (typeof name));
             }
-
-            return topic;
-        };
-
-        // ---------------------------------------------------------------------------------- }}}
-
-        // _e.emit( name [, args... ] ) ----------------------------------------------------- {{{
-
-        api.emit = function() {
-            var global_topic = api.topic();
-            global_topic.emit.apply(global_topic, arguments);
-        };
-
-        // ---------------------------------------------------------------------------------- }}}
-
-        // _e.on( name, receiver ) ---------------------------------------------------------- {{{
-
-        api.on = function() {
-            var global_topic = api.topic();
-            global_topic.on.apply(global_topic, arguments);
-        };
-
-        // ---------------------------------------------------------------------------------- }}}
-
-        // _e.connect( name, [ sender, ] receiver ) ----------------------------------------- {{{
-
-        api.connect = function _eConnect(name, sender, receiver) {
-
-            if (arguments.length === 2) {
-
-                var global_topic = api.topic();
-                return global_topic.connect(name, sender);
-
-            } else {
-
-                if (sender === receiver) {
-                    throw new CustomEventError("can't connect object with oneself!");
-                }
-
-                api.eventize(sender);
-
-                return sender.on(name, receiver);
-
-            }
-        };
-
-        // ---------------------------------------------------------------------------------- }}}
-
-
-        // internal class definitions ======================================================= {{{
-
-        // CustomEventTopic ----------------------------------------------------------------- {{{
-
-        function CustomEventTopic(name) {
-
-            _definePublicPropertyRO(this, "name", name);
-
-            this.pause = false;
-
-            api.eventize(this);
-        }
-
-        Object.defineProperties(CustomEventTopic.prototype, {
-
-            'pause': {
-
-                enumerable: true,
-
-                get: function() { return this._pause; },
-
-                set: function(pause) {
-                    _definePublicPropertyRO(this, 'pause', !!pause);
-                }
-            }
-        });
-
-        // ---------------------------------------------------------------------------------- }}}
-
-        // CustomEventSlot ------------------------------------------------------------------ {{{
-
-        function CustomEventSlot(obj, prop) {
-
-            //api.eventize(this);
-
-            this.pause = false;
 
             _definePublicPropertiesRO(this, {
-                object      : obj,
-                isDestroyed : false,
-                isTopic     : (obj instanceof CustomEventTopic)
+                'owner' : owner,
+                'name'  : name
             });
 
-            if (obj instanceof CustomEventConnection) {
-                prop = "pipe";
-            }
+            _defineHiddenPropertyRO(this, 'listeners', new Set());
 
-            if (typeof obj === 'function') {
+            this.mute = false;
+        }
 
-                _definePublicPropertiesRO(this, {
-
-                    isFunction: true,
-
-                    signal: function _eCustomEventSlot_functionSignal(name, args, ctx) {
-                        this.object.apply(ctx, args);
-                    },
-
-                    equals: function _eCustomEventSlot_functionEquals(other) {
-                        return other === this || ( other.object === this.object && other.isFunction === true );
+        CustomEventSlot.prototype.signal = function(args) {
+            var self = this;
+            if (!this.mute) {
+                this.listeners.forEach(function(listener) {
+                    if (listener instanceof CustomEventSlot) {
+                        // TODO use proxy slot .. find slot before signal
+                        listener.signal(args);
+                    } else {
+                        if (typeof listener === 'string') {
+                            listener = self.owner[listener];
+                        }
+                        if (typeof listener === 'function') {
+                            listener.apply(self.owner, args);
+                        }
                     }
-
                 });
-
-            } else {
-
-                _definePublicPropertyRO(this, 'isFunction', false);
-
-                prop = typeof prop === 'string' ? prop : "emit";
-
-                if (prop === "emit" || prop === "on") {
-
-                    _definePublicPropertiesRO(this, {
-
-                        property: "emit",
-
-                        signal: function _eCustomEventSlot_emitSignal(name, args) {
-                            var _prop = this.object[this.property];
-                            if ('function' === typeof _prop) {
-                                _prop.apply(this.object, [name].concat(args));
-                            }
-                        }
-
-                    });
-
-                } else if (prop === "pipe") {
-
-                    _definePublicPropertiesRO(this, {
-
-                        property: "pipe",
-
-                        signal: function _eCustomEventSlot_pipeSignal(name, args) {
-                            this.object.pipe(name, args);
-                        }
-
-                    });
-
-                } else if (obj instanceof CustomEventSlot) {
-
-                    _definePublicPropertiesRO(this, {
-
-                        property: "signal",
-
-                        signal: function _eCustomEventSlot_signalSignal(name, args) {
-                            var _prop = this.object[this.property];
-                            if ('function' === typeof _prop) {
-                                _prop.call(this.object, [name].concat(args));
-                            }
-                        }
-
-                    });
-
-                } else {
-
-                    _definePublicPropertiesRO(this, {
-
-                        property: prop,
-
-                        signal: function _eCustomEventSlot_signal(name, args) {
-                            var _prop = this.object[this.property];
-                            if ('function' === typeof _prop) {
-                                _prop.apply(this.object, args);
-                            }
-                        }
-
-                    });
-
-                }
-
-
-                this.equals = function _eCustomEventSlot_equals(other) {
-                    return other === this || ( other.object === this.object && other.property === this.property );
-                };
-
             }
-        }
-
-
-        CustomEventSlot.prototype.destroy = function _eCustomEventSlot_destroy() {
-
-            this.pause = true;
-
-            _definePublicPropertiesRO(this, {
-
-                isDestroyed : true,
-                signal      : function(){},
-                equals      : function() { return false; }
-
-            });
-
-            delete this.object;
-            delete this._signal;
         };
 
+        CustomEventSlot.prototype.addEventListener = function(listener) {
+
+            if (!(typeof listener === 'string' || typeof listener === 'function' || listener instanceof CustomEventSlot)) {
+                throw new CustomEventError('CustomEventSlot#addEventListener(listener) insists on string value, function or instanceof CustomEventSlot as :listener parameter, but is ' + (typeof listener));
+            }
+
+            this.listeners.add(listener);
+        };
+
+        CustomEventSlot.prototype.removeEventListener = function(listener) {
+            this.listeners.delete(listener);
+        };
+
+        CustomEventSlot.prototype.removeAllEventListeners = function() {
+            this.listeners.clear();
+        };
 
         Object.defineProperties(CustomEventSlot.prototype, {
 
-            'pause': {
+            'mute': {
 
                 enumerable: true,
 
                 get: function() {
-                    if (this.isTopic) {
-                        return this._pause || (this.object && this.object.pause);
-                    } else {
-                        return this._pause;
-                    }
+                    return this._mute;
                 },
 
-                set: function(pause) {
-                    _defineHiddenPropertyRO(this, "_pause", !!pause);
+                set: function(mute) {
+                    _defineHiddenPropertyRO(this, "_mute", !!mute);
                 }
             }
         });
 
-        // ---------------------------------------------------------------------------------- }}}
 
-        // CustomEventConnection ------------------------------------------------------------ {{{
-
-        function CustomEventConnection(name, sender, receiver) {
-
-            _definePublicPropertyRO(this, "name", name);
-
-            this.receiver = receiver;  // its important here to set receiver before sender! (why(obsolete)?)
-                                       // receiver is a CustomEventSlot
-            this.sender   = sender;    // sender is an eventize(sender)'d object
-            this.pause    = false;
-        }
-
-        CustomEventConnection.prototype.pipe = function _eCustomEventConnection_pipe(name, args, ctx) {
-            if (!this.pause && this._receiver != null) {
-                if (this._receiver.isDestroyed) {
-                    this.receiver = null;
-                } else {
-                    this._receiver.signal(name, args, ctx);
-                }
-            }
-        };
-
-        CustomEventConnection.prototype.eventize = function _eCustomEventConnection_eventize() {
-            return api.eventize(this);
-        };
-
-
-        Object.defineProperties(CustomEventConnection.prototype, {
-
-            'receiver': {
-
-                enumerable: true,
-
-                get: function() { return this._receiver; },
-
-                set: function(receiver) {
-
-                    _defineHiddenPropertyRO(this, '_receiver', (receiver == null ? null :
-                        (receiver instanceof CustomEventSlot ? receiver : new CustomEventSlot(receiver))));
-
-                    if (this._receiver != null && this._receiver.isDestroyed) {
-                        throw new CustomEventError("can't create a connection to destroyed slot (receiver)!");
-                    }
-                }
-            },
-
-            'sender': {
-
-                enumerable: true,
-
-                get: function() { return this._sender; },
-
-                set: function(sender) {
-                    var prevSender = this._sender;
-                    _defineHiddenPropertyRO(this, '_sender', sender);
-                    if (sender != null) {
-                        api.eventize(sender);
-                        if (prevSender !== sender) {
-                            if (prevSender != null) _unbind(this, prevSender);
-                            _bind(this, sender);
-                        }
-                    } else if (prevSender != null) {
-                        _unbind(this, prevSender);
-                    }
-                }
-            },
-
-            'pause': {
-
-                enumerable: true,
-
-                get: function() { return this._pause; },
-
-                set: function(pause) {
-                    _defineHiddenPropertyRO(this, '_pause', !!pause);
-                }
-            }
-
-        });
-
-        // ---------------------------------------------------------------------------------- }}}
-
-        // CustomEventError ----------------------------------------------------------------- {{{
 
         function CustomEventError(message) {
             this.name    = "CustomEventError";
             this.message = message;
         }
 
+        api.CustomEventError = CustomEventError;
+
         CustomEventError.prototype = new Error();
         CustomEventError.prototype.constructor = CustomEventError;
 
-        // ---------------------------------------------------------------------------------- }}}
 
-        // ================================================================================== }}}
 
-        // private helpers ------------------------------------------------------------------ {{{
+        function _createCustomEventMetaInfo() {
 
-        function _indexOfConnectionTarget(arr, ec) {
-            if (arr && ec && ec.receiver) {
-                for (var i = arr.length; i--;) {
-                    if (ec.name === arr[i].name && ec.receiver.equals(arr[i].receiver)) return i;
-                }
-            }
-            return -1;
+            var _e = Object.create(null);
+
+            _e.slots = new Map();
+            _e.slotsFreezed = false;
+
+            return _e;
         }
-
-
-        function _bind(eventConnection, obj) { // obj should be eventized
-            if (obj && obj._e && _indexOfConnectionTarget(obj._e.connections, eventConnection) === -1) {
-                obj._e.connections.push(eventConnection);
-            }
-        }
-
-        function _unbind(eventConnection, obj) { // obj should be eventized
-            if (obj && obj._e && Array.isArray(obj._e.connections)) {
-                var i = _indexOfConnectionTarget(obj._e.connections, eventConnection);
-                if (i >= 0) obj._e.connections.splice(i, 1);
-            }
-        }
-
 
         function _definePublicPropertyRO(obj, name, value) {
             Object.defineProperty(obj, name, {
@@ -511,8 +230,6 @@
                 configurable : true
             });
         }
-
-        // ---------------------------------------------------------------------------------- }}}
 
     })(_exports);
 

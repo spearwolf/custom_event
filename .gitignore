@@ -4,3 +4,6 @@ old/
 deploy.sh
 .rvmrc
 node_modules/
+.tmp
+src/custom_event.bak.js
+src/custom_event_broken.js
